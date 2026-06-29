@@ -73,7 +73,7 @@ export class BarsetGenerationSql implements BarsetGeneration {
     @Column("int")
     public priceRequestId: number;
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     @OneToOne(type => PriceRequestSql, pr => pr.barsetGeneration)

@@ -5,7 +5,7 @@ import { Repository, UpdateResult } from "typeorm";
 import { PermissionSql } from "../entities/permission.entity";
 import { IPermission, UpdatePermission } from "../interfaces/permission.interface";
 import { USER_GROUPS } from "../../users/enums/usergroups.enum";
-import { LocalStorage } from "node-localstorage";
+import { InMemoryStorage } from "../../../core/utils/in-memory-storage";
 @Injectable()
 export class PermissionService {
     
@@ -22,7 +22,7 @@ export class PermissionService {
      */
     public async findByProperty(permissionProperties: IPermission){
         try {
-            let permission =  await this._permissionRepo.find({ where: permissionProperties });
+            let permission =  await this._permissionRepo.find({ where: permissionProperties } as any);
             return permission;
         } catch (e) {
             throw ErrorUtil.get(e);
@@ -56,7 +56,7 @@ export class PermissionService {
         try { 
             const updated: UpdateResult = await this._permissionRepo.update(id,<PermissionSql>data);
             this.savePermissionsToLocalStorage();
-            const permission = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._permissionRepo.findOne(id) : null;
+            const permission = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._permissionRepo.findOneBy({ id }) : null;
             return permission;
         } catch (e) {
             throw ErrorUtil.get(e);
@@ -82,7 +82,7 @@ export class PermissionService {
                 dataToSave[perm.userGroup][perm.category] = perm;
             });
 
-            let localStorage = new LocalStorage('./scratch');
+            let localStorage = new InMemoryStorage();
             localStorage.setItem('dataPermission', JSON.stringify(dataToSave));
         });
     }

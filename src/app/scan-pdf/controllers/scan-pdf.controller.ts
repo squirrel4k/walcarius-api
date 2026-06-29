@@ -1,4 +1,6 @@
-import { Controller, Post, UseInterceptors, UploadedFiles, Get, Param, Res, FilesInterceptor } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFiles, Get, Param, Res } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { DataSource } from 'typeorm';
 import { diskStorage } from 'multer';
 import { FileUtil } from "../../../core/utils/file.util";
 import { Response } from "express";
@@ -11,17 +13,18 @@ import { ScanPdfSql } from '../entities/scan-pdf.entity';
 import { PurchaseOrder } from '../../purchase-orders/interfaces/purchase-order.interface';
 import { PurchaseOrderSql } from '../../purchase-orders/entities/purchase-order.entity';
 import { PurchaseOrderService } from '../../purchase-orders/services/purchase-order.service';
-import { getConnection } from 'typeorm';
+
 import { ErrorUtil } from '../../../core/utils/error.util';
 const PATH = require('path')
 
 @Controller('/api/scan')
 export class ScanPdfController {
  
-  public constructor(
-    private readonly _scanPdfSrv: ScanPdfService,
+  constructor(
+        private readonly _dataSource: DataSource,
+        private readonly _scanPdfSrv: ScanPdfService,
     private readonly  _purchaseOrderSrv: PurchaseOrderService,
-  ) {
+    ) {
   }
 
   @Get("/:url")
@@ -64,7 +67,7 @@ export class ScanPdfController {
     }),
   )
   async uploadMultipleFiles(@Param("purchaseOrderId") purchaseOrderId: number, @UploadedFiles() files:  ReceivedFile[]) {
-    return await getConnection().transaction(async transaction => {
+    return await this._dataSource.transaction(async transaction => {
       // check if PurchaseOrder exist in DB
       const purchaseOrder: PurchaseOrderSql = await this._purchaseOrderSrv.getById(purchaseOrderId, transaction);
       if (!purchaseOrder) { throw new Error("PurchaseOrder not found."); }

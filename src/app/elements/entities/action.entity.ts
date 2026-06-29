@@ -12,7 +12,7 @@ export class ActionSql implements Action {
     public name: string;
 
     @Column("json")
-    public natureValues: any;
+    public natureValues: Record<string, unknown>;
 
     @Column("int")
     public actionGroupId: number;

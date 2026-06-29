@@ -1,3 +1,3 @@
-import { ReflectMetadata } from "@nestjs/common";
+import { SetMetadata } from "@nestjs/common";
 
-export const Access = (...accesses: string[]) => ReflectMetadata("access", accesses);
+export const Access = (...accesses: string[]) => SetMetadata("access", accesses);

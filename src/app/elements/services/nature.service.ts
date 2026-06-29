@@ -13,13 +13,13 @@ export class NatureService {
         private readonly _natureByActionGroupLoader: NatureByActionGroupLoader
     ) { }
 
-    public elementNatureValues(values: any, natures: Nature[], oldValues?: any): any {
-        const result: any = {};
+    public elementNatureValues(values: Record<string, unknown>, natures: Nature[], oldValues?: Record<string, unknown>): Record<string, unknown> {
+        const result: Record<string, unknown> = {};
 
         natures.forEach(nature => {
-            const oldValue: any = oldValues ? oldValues[nature.name] : null;
-            const inputValue: any = values ? values[nature.name] : null;
-            const value: any = inputValue || oldValue || null;
+            const oldValue: unknown = oldValues ? oldValues[nature.name] : null;
+            const inputValue: unknown = values ? values[nature.name] : null;
+            const value: unknown = inputValue || oldValue || null;
 
             if (!nature.nullable && !nature.redefine && !value) {
                 throw new Error(`The nature ${nature.name} is mandatory please provide a value.`);
@@ -49,10 +49,10 @@ export class NatureService {
      * @returns {boolean}
      * @memberof NatureService
      */
-    private natureValueMatchType(type: NatureType, value: any, regex: string): boolean {
+    private natureValueMatchType(type: NatureType, value: unknown, regex: string): boolean {
         switch (type) {
             case "STRING":
-                return Is.string(value) && (!regex || new RegExp(regex).test(value));
+                return Is.string(value) && (!regex || new RegExp(regex).test(value as string));
             case "INT":
                 return Is.integer(+value);
             case "FLOAT":

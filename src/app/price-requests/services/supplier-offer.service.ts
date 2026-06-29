@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SupplierOfferSql } from "../entities/supplier-offer.entity";
-import { Repository, EntityManager, FindConditions, In } from "typeorm";
+import { Repository, EntityManager, FindOptionsWhere, In } from "typeorm";
 import { SupplierOffer, SupplierInfo, SupplierOfferUpdate } from "../interfaces/supplier-offer.interface";
 import { PriceRequest } from "../interfaces/price-request.interface";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
@@ -315,12 +315,12 @@ export class SupplierOfferService extends BaseSqlService<SupplierOfferSql, Suppl
     /**
      * @description Delete all SupplierOffer and their SupplierOfferElement matching the given condition
      * @author Quentin Wolfs
-     * @param {FindConditions<SupplierOfferSql>} condition
+     * @param {FindOptionsWhere<SupplierOfferSql>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof SupplierOfferService
      */
-    public async deleteBy(condition: FindConditions<SupplierOfferSql>, transaction?: EntityManager): Promise<boolean> {
+    public async deleteBy(condition: FindOptionsWhere<SupplierOfferSql>, transaction?: EntityManager): Promise<boolean> {
         try {
             const selected = await super.getBy(condition, transaction);
             if (selected.length == 0) { return true; }

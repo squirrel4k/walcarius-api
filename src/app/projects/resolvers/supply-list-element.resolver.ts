@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { SupplyListElement } from "../interfaces/supply-list-element.interface";
 import { MatterService } from "../../elements/services/matter.service";
@@ -23,27 +23,27 @@ export class SupplyListElementResolver {
         private readonly _supplyCategorySrv: SupplyCategoryService
     ) { }
 
-    @ResolveProperty("matter")
+    @ResolveField("matter")
     public async getMatter(@Parent() supplyListElement: SupplyListElement, @UUID() uuid: string): Promise<Matter> {
         return supplyListElement.matterId ? this._matterSrv.getById(supplyListElement.matterId, uuid) : null;
     }
 
-    @ResolveProperty("element")
+    @ResolveField("element")
     public async getElement(@Parent() supplyListElement: SupplyListElement, @UUID() uuid: string): Promise<Element> {
         return supplyListElement.elementId ? this._elementSrv.getById(supplyListElement.elementId, uuid) : null;
     }
 
-    @ResolveProperty("supplyList")
+    @ResolveField("supplyList")
     public async getSupplyList(@Parent() supplyListElement: SupplyListElement, @UUID() uuid: string): Promise<SupplyList> {
         return await this._supplyListSrv.getById(supplyListElement.supplyListId, uuid);
     }
 
-    @ResolveProperty("supplyCategory")
+    @ResolveField("supplyCategory")
     public async getSupplyCategory(@Parent() supplyListElement: SupplyListElement, @UUID() uuid: string): Promise<SupplyCategory> {
         return supplyListElement.supplyCategoryId ? this._supplyCategorySrv.getById(supplyListElement.supplyCategoryId, uuid) : null;
     }
 
-    @ResolveProperty("basicQuantityUnit")
+    @ResolveField("basicQuantityUnit")
     public async getBasicQuantityUnit(@Parent() supplyListElement: SupplyListElement, @UUID() uuid: string): Promise<string> {
         return supplyListElement.quantityUnit;
     }

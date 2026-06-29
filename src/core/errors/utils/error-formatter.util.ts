@@ -1,4 +1,3 @@
-import { ValidationError } from "apollo-server-core";
 import { HttpStatus, Logger } from "@nestjs/common";
 import { EnumUtil } from "../../utils/enum.util";
 import { ERROR_MESSAGE } from "../enum/error.enum";
@@ -46,7 +45,7 @@ export class ErrorFormatterUtil {
                 ...this.formatEncapsulatedNestInfo(err)
             };
         // GraphQL validation error
-        } else if (err instanceof ValidationError || err.path === undefined) {
+        } else if (err.path === undefined) {
             error = {
                 ...error,
                 message: "GraphQL validation failed",

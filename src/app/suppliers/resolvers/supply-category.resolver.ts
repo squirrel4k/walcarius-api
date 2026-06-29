@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent, Mutation } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent, Mutation } from "@nestjs/graphql";
 import { UseInterceptors } from "@nestjs/common";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
 import { SupplyCategory, SelectedSupplyCategory, SelectedSupplyCategoryInput } from "../interfaces/supply-category.interface";
@@ -48,27 +48,27 @@ export class SupplyCategoryResolver {
     }
 
 
-    @ResolveProperty("subCategories")
+    @ResolveField("subCategories")
     public async getSubCategories(@Parent() supplyCategory: SupplyCategory, @UUID() uuid: string): Promise<SupplyCategory[]> {
         return this._supplyCategorySrv.getSubSupplyCategories(supplyCategory.id, uuid);
     }
 
-    @ResolveProperty("parentSupplyCategory")
+    @ResolveField("parentSupplyCategory")
     public async getParentCategory(@Parent() supplyCategory: SupplyCategory, @UUID() uuid: string): Promise<SupplyCategory> {
         return supplyCategory.parentSupplyCategoryId ? await this._supplyCategorySrv.getById(supplyCategory.parentSupplyCategoryId, uuid) : null;
     }
 
-    @ResolveProperty("elementGroup")
+    @ResolveField("elementGroup")
     public async getElementGroup(@Parent() supplyCategory: SupplyCategory, @UUID() uuid: string): Promise<ElementGroup> {
         return supplyCategory.elementGroupId ? await this._elementGroupSrv.getById(supplyCategory.elementGroupId, uuid) : null;
     }
 
-    @ResolveProperty("fields")
+    @ResolveField("fields")
     public async getFields(@Parent() supplyCategory: SupplyCategory, @UUID() uuid: string): Promise<Nature[]> {
         return this._supplyCategorySrv.getFields(supplyCategory.id, uuid);
     }
 
-    @ResolveProperty("suppliers")
+    @ResolveField("suppliers")
     public async getSuppliers(@Parent() supplyCategory: SupplyCategory, @UUID() uuid: string): Promise<Supplier[]> {
         return this._supplierSrv.getListBySupplyCategory(supplyCategory.id, uuid);
     }

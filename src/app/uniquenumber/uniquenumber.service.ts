@@ -42,7 +42,7 @@ export class UniqueNumberService {
         const hasMail: boolean = user != null && user.username != null;
 
         if (hasMail) {
-            const existing = await this._reservedNumberRepo.findOne({ type, username: user.username });
+            const existing = await this._reservedNumberRepo.findOneBy({ type, username: user.username });
             if (existing) { return existing.number; }
         }
 
@@ -65,7 +65,7 @@ export class UniqueNumberService {
      * @description Fetch all reserved numbers for a given type as "username:number" strings
      */
     private async _getStoredNumbers(type: NUMBER_TYPE): Promise<string[]> {
-        const rows = await this._reservedNumberRepo.find({ type });
+        const rows = await this._reservedNumberRepo.find({ where: { type } });
         return rows.map(r => `${r.username}:${r.number}`);
     }
 

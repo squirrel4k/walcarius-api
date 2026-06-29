@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args, Query, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, Mutation, Args, Query, ResolveField, Parent } from "@nestjs/graphql";
 import { VariantOptionService } from "../services/variant-option.service";
 import { UseInterceptors } from "@nestjs/common";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
@@ -48,7 +48,7 @@ export class VariantOptionResolver {
         return this._variantOptionSrv.delete(id);
     }
 
-    @ResolveProperty("variant")
+    @ResolveField("variant")
     public async getVariant(@Parent() option: VariantOption, @UUID() uuid: string): Promise<Variant> {
         return option.variantId ? this._variantSrv.getById(option.variantId, uuid) : null;
     }

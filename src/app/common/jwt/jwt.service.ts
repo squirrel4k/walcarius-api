@@ -16,12 +16,12 @@ export class JwtWrapperService {
         private readonly _jwtSrv: JwtService
     ) { }
 
-    public sign(payload: string | Object | Buffer, options?: jwt.SignOptions): string {
-        return this._jwtSrv.sign(payload, options);
+    public sign(payload: string | object | Buffer, options?: jwt.SignOptions): string {
+        return this._jwtSrv.sign(payload as any, options as any);
     }
 
-    public async signAsync(payload: string | Object | Buffer, options?: jwt.SignOptions): Promise<string> {
-        return this._jwtSrv.signAsync(payload, options);
+    public async signAsync(payload: string | object | Buffer, options?: jwt.SignOptions): Promise<string> {
+        return this._jwtSrv.signAsync(payload as any, options as any);
     }
 
     public verify<T extends object = any>(token: string, options?: jwt.VerifyOptions): T {

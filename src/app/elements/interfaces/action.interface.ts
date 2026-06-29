@@ -3,7 +3,7 @@ import { ActionGroup } from "./action-group.interface";
 
 export interface Action {
     name?: string;
-    natureValues?: any;
+    natureValues?: Record<string, unknown>;
     matter?: Matter;
     matterId?: number;
     actionGroupId?: number;

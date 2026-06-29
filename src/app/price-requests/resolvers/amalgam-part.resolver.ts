@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { AmalgamService } from "../services/amalgam.service";
 import { AmalgamPart } from "../interfaces/amalgam-part.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
@@ -17,12 +17,12 @@ export class AmalgamPartResolver {
         private readonly _supplyListElementSrv: SupplyListElementService
     ) { }
 
-    @ResolveProperty("amalgam")
+    @ResolveField("amalgam")
     public async getAmalgam(@Parent() part: AmalgamPart, @UUID() uuid: string): Promise<Amalgam> {
         return this._amalgamSrv.getById(part.amalgamId, uuid);
     }
 
-    @ResolveProperty("supplyListElement")
+    @ResolveField("supplyListElement")
     public async getSupplyListElement(@Parent() part: AmalgamPart, @UUID() uuid: string): Promise<SupplyListElement> {
         return this._supplyListElementSrv.getById(part.supplyListElementId, uuid);
     }

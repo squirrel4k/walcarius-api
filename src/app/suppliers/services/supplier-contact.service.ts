@@ -30,7 +30,7 @@ export class SupplierContactService extends BaseSqlService<SupplierContactSql, S
     public async getList(filter: SupplierContactFilter): Promise<SupplierContactSql[]> {
         try {
             filter.deletedAt = IsNull();
-            return super.getList(filter, { isFavorite: "DESC" });
+            return super.getList(filter as any, { isFavorite: "DESC" } as any);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -61,7 +61,7 @@ export class SupplierContactService extends BaseSqlService<SupplierContactSql, S
      */
     public async create(data: SupplierContactInput): Promise<SupplierContactSql> {
         try {
-            const count = await this._baseRepo.count({ supplierId: data.supplierId, deletedAt: IsNull() });
+            const count = await this._baseRepo.countBy({ supplierId: data.supplierId, deletedAt: IsNull() });
             data.isFavorite = count == 0;
 
             return super.create(data);

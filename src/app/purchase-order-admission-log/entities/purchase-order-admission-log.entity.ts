@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from "typeorm";
-import { IpurchaseOrderAdmissionLog } from "../interfaces/purchaseOrderAdmissionLog.interface";
+import { IpurchaseOrderAdmissionLog } from "../interfaces/purchase-order-admission-log.interface";
 
 @Entity({ name: "admission" })
 export class PurchaseOrderAdmissionLogSql implements IpurchaseOrderAdmissionLog {

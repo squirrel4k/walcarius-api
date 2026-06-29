@@ -27,7 +27,7 @@ export class UserService extends BaseSqlService<UserSql, UserInput, UserInput> {
      */
     public async findByProperty(userProperties: User) {
         try {
-            return await this._userRepo.findOne({ where: userProperties });
+            return await this._userRepo.findOneBy(userProperties as any);
         } catch (e) {
             throw ErrorUtil.get(e);
         }

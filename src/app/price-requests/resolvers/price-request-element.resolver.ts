@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent, Mutation } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent, Mutation } from "@nestjs/graphql";
 import { PriceRequestElementService } from "../services/price-request-element.service";
 import { PriceRequestElementFilter, PriceRequestElement, PriceRequestElementUpdate } from "../interfaces/price-request-element.interface";
 import { UseInterceptors } from "@nestjs/common";
@@ -17,14 +17,15 @@ import { SupplierOfferElementService } from "../services/supplier-offer-element.
 import { SupplyCategory } from "../../suppliers/interfaces/supply-category.interface";
 import { PriceRequestElementOption } from "../interfaces/price-request-element-option.interface";
 import { PriceRequestElementOptionService } from "../services/price-request-element-option.service";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 
 @Resolver("PriceRequestElement")
 @UseInterceptors(GqlLoggerInterceptor)
 export class PriceRequestElementResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _priceRequestElementSrv: PriceRequestElementService,
         private readonly _amalgamGroupSrv: AmalgamGroupService,
         private readonly _supplyListElementSrv: SupplyListElementService,
@@ -48,63 +49,63 @@ export class PriceRequestElementResolver {
     @Mutation("updatePriceRequestElement")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async update(@Args("id") id: number, @Args("data") data: PriceRequestElementUpdate): Promise<PriceRequestElement> {
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             return (await this._priceRequestElementSrv.updateMany([{ id, ...data }], manager)).shift();
         }).catch(err => { throw ErrorUtil.get(err); });
 
     }
 
-    @ResolveProperty("amalgamGroup")
+    @ResolveField("amalgamGroup")
     public async getAmalgamGroup(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<AmalgamGroup> {
         return element.amalgamGroupId ? this._amalgamGroupSrv.getById(element.amalgamGroupId, uuid) : null;
     }
 
-    @ResolveProperty("supplyListElement")
+    @ResolveField("supplyListElement")
     public async getSupplyListElement(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<SupplyListElement> {
         return element.supplyListElementId ? this._supplyListElementSrv.getById(element.supplyListElementId, uuid) : null;
     }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<PriceRequest> {
         return this._priceRequestSrv.getById(element.priceRequestId, uuid);
     }
 
-    @ResolveProperty("bestPrice")
+    @ResolveField("bestPrice")
     public async getBestPrice(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<number> {
         return this._priceRequestElementSrv.getBestPrice(element.id, uuid);
     }
 
-    @ResolveProperty("bestTime")
+    @ResolveField("bestTime")
     public async getBestDeliveryDate(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<Date> {
         return await this._priceRequestElementSrv.getBestTime(element.id, uuid);
     }
 
-    @ResolveProperty("supplierOfferElements")
+    @ResolveField("supplierOfferElements")
     public async getSupplierOfferElements(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<SupplierOfferElement[]> {
         return await this._supplierOfferElementSrv.getByPriceRequestElement(element.id, uuid);
     }
 
-    @ResolveProperty("parentSupplyCategory")
+    @ResolveField("parentSupplyCategory")
     public async getParentSupplyCategory(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<SupplyCategory> {
         return this._priceRequestElementSrv.getParentSupplyCategory(element.id, uuid);
     }
 
-    @ResolveProperty("stockQuantity")
+    @ResolveField("stockQuantity")
     public async getStockQuantity(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<number> {
         return element.amalgamGroupId ? this._amalgamGroupSrv.getStockQuantity(element.amalgamGroupId, uuid) : 0;
     }
 
-    @ResolveProperty("purchaseOrderQuantity")
+    @ResolveField("purchaseOrderQuantity")
     public async getPurchaseOrderQuantity(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<number> {
         return this._priceRequestElementSrv.getPurchaseOrderQuantity(element.id, uuid);
     }
 
-    @ResolveProperty("options")
+    @ResolveField("options")
     public async getPriceRequestElementOptions(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<PriceRequestElementOption[]> {
         return this._priceRequestElementOptionSrv.getByPriceRequestElement(element.id, uuid);
     }
 
-    @ResolveProperty("hasPrice")
+    @ResolveField("hasPrice")
     public async getHasPrice(@Parent() element: PriceRequestElement, @UUID() uuid: string): Promise<boolean> {
         return this._priceRequestElementSrv.getHasPrice(element.id, uuid);
     }

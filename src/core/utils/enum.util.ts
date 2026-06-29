@@ -6,7 +6,7 @@ export const EnumUtil = new class {
      * @param {*} enumeration
      * @returns {string[]}
      */
-    public getKeys(enumeration: any): string[] {
+    public getKeys(enumeration: Record<string, string | number>): string[] {
         return Object.keys(enumeration).filter(key => isNaN(parseInt(key, 10)));
     }
 
@@ -17,7 +17,7 @@ export const EnumUtil = new class {
      * @param {(string | number)} value
      * @returns {string}
      */
-    public getKey(enumeration: any, value: string | number): string {
+    public getKey(enumeration: Record<string, string | number>, value: string | number): string {
         return this.getKeys(enumeration).find(key => enumeration[key] === value);
     }
 
@@ -27,8 +27,8 @@ export const EnumUtil = new class {
      * @param {*} enumeration
      * @returns {(T[])}
      */
-    public getValues<T>(enumeration: any): T[] {
-        return this.getKeys(enumeration).map(key => enumeration[key]);
+    public getValues<T>(enumeration: Record<string, string | number>): T[] {
+        return this.getKeys(enumeration).map(key => enumeration[key]) as unknown as T[];
     }
 
     /**
@@ -37,7 +37,7 @@ export const EnumUtil = new class {
      * @param {*} enumeration
      * @returns {string[]}
      */
-    public getStringValues(enumeration: any): string[] {
+    public getStringValues(enumeration: Record<string, string | number>): string[] {
         return this.getKeys(enumeration).map(key => enumeration[key].toString());
     }
 
@@ -48,7 +48,7 @@ export const EnumUtil = new class {
      * @param {T} value
      * @returns {boolean}
      */
-    public inValues<T>(enumeration: any, value: T): boolean {
-        return this.getValues<T>(enumeration).some(enumValue => enumValue === value);
+    public inValues<T>(enumeration: Record<string, T>, value: T): boolean {
+        return this.getValues(enumeration as any).includes(value);
     }
-};
+}

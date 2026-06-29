@@ -36,7 +36,7 @@ export class AnyExceptionFilter implements ExceptionFilter {
 
         const response = context.getResponse();
         const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-        const content = ErrorFormatterUtil.format(exception, this._logger);
+        const content = ErrorFormatterUtil.format(exception as any, this._logger);
 
         response
             .status(status)

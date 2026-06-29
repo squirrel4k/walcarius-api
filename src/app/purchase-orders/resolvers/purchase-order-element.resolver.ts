@@ -1,4 +1,5 @@
-import { Resolver, ResolveProperty, Parent, Query, Args, Mutation, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, ResolveField, Parent, Query, Args, Mutation, Context } from "@nestjs/graphql";
 import { PurchaseOrderElementService } from "../services/purchase-order-element.service";
 import { PurchaseOrderService } from "../services/purchase-order.service";
 import { SupplierOfferElementService } from "../../price-requests/services/supplier-offer-element.service";
@@ -14,11 +15,11 @@ import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { BadRequestException, UseInterceptors } from "@nestjs/common";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
-import { getConnection, In } from "typeorm";
+import { DataSource, In } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
 import { Pagination } from "../../../core/interfaces/crud.interface";
-import { PurchaseOrderAdmissionLogService } from "../../purchaseOrderAdmissionLog/services/purchaseOrderAdmissionLog.service";
+import { PurchaseOrderAdmissionLogService } from "../../purchase-order-admission-log/services/purchase-order-admission-log.service";
 import { PriceRequestElementService } from "../../price-requests/services/price-request-element.service";
 import { PurchaseOrderElementSql } from "../entities/purchase-order-element.entity";
 
@@ -26,7 +27,8 @@ import { PurchaseOrderElementSql } from "../entities/purchase-order-element.enti
 @UseInterceptors(GqlLoggerInterceptor)
 export class PurchaseOrderElementResolver {
     private quantityAdmission: number;
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _purchaseOrderElementSrv: PurchaseOrderElementService,
         private readonly _purchaseOrderSrv: PurchaseOrderService,
         private readonly _supplierOfferElementSrv: SupplierOfferElementService,
@@ -54,7 +56,7 @@ export class PurchaseOrderElementResolver {
         @Args("search") search: string,
         @Args("filter") filter: FilterPurchaseOrderElement,
         @Args("pagination") pagination?: Pagination,
-        @Context() ctx?: any): Promise<PurchaseOrderElement[]> {
+        @Context() ctx?: GqlContext): Promise<PurchaseOrderElement[]> {
         const results = await this._purchaseOrderElementSrv.listFilterPurchaseOrderElement(search, filter, pagination);
         const stockData = await this.getStockData(search, filter, pagination, results)
         ctx.pagination = results.pagination;
@@ -171,7 +173,7 @@ export class PurchaseOrderElementResolver {
             throw new BadRequestException(ERROR_MESSAGE.PURCHASE_ORDER_ALREADY_SENT);
         }
 
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             // Create top element
             const element = await this._purchaseOrderElementSrv.create(data, manager);
 
@@ -191,7 +193,7 @@ export class PurchaseOrderElementResolver {
             throw new BadRequestException(ERROR_MESSAGE.PURCHASE_ORDER_ALREADY_SENT);
         }
 
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             // Upsert element's options
             const options = data.options.map(option => ({ ...option, purchaseOrderElementId: id }));
             await this._purchaseOrderElementOptionSrv.upsertMany(options, manager);
@@ -373,22 +375,22 @@ export class PurchaseOrderElementResolver {
         return this._purchaseOrderElementSrv.delete(id);
     }
 
-    @ResolveProperty("purchaseOrder")
+    @ResolveField("purchaseOrder")
     public async getPurchaseOrder(@Parent() element: PurchaseOrderElement, @UUID() uuid: string): Promise<PurchaseOrder> {
         return element.purchaseOrderId ? this._purchaseOrderSrv.getById(element.purchaseOrderId, uuid) : null;
     }
 
-    @ResolveProperty("supplierOfferElement")
+    @ResolveField("supplierOfferElement")
     public async getSupplierOfferElement(@Parent() element: PurchaseOrderElement, @UUID() uuid: string): Promise<SupplierOfferElement> {
         return element.supplierOfferElementId ? this._supplierOfferElementSrv.getById(element.supplierOfferElementId, uuid) : null;
     }
 
-    @ResolveProperty("supplyCategory")
+    @ResolveField("supplyCategory")
     public async getSupplyCategory(@Parent() element: PurchaseOrderElement, @UUID() uuid: string): Promise<SupplyCategory> {
         return element.supplyCategoryId ? this._supplyCategorySrv.getById(element.supplyCategoryId, uuid) : null;
     }
 
-    @ResolveProperty("options")
+    @ResolveField("options")
     public async getOptions(@Parent() element: PurchaseOrderElement, @UUID() uuid: string): Promise<PurchaseOrderElementOption[]> {
         return !element.options ? this._purchaseOrderElementOptionSrv.getByPurchaseOrderElement(element.id, uuid) : element.options;
     }

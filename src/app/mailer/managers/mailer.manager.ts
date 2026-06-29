@@ -47,8 +47,8 @@ export class MailerManager {
             },
             transport: Nodemailer.createTransport({
                 host: host,
-                secureConnection: false,
-                port: port,
+                secure: false,
+                port: parseInt(port as string, 10) as any,
                 auth: {
                     user: username,
                     pass: password

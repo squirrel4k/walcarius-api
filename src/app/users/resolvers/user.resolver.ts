@@ -1,3 +1,4 @@
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
 import { Resolver, Query, Args, Context, Mutation } from "@nestjs/graphql";
 import { UserService } from "../services/user.service";
 import { UpdateUser, User, UserInput, UserSort } from "../interfaces/user.interface";
@@ -8,7 +9,7 @@ import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserSql } from "../entities/user.entity";
-import { getConnection, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { Pagination } from "../../../core/interfaces/crud.interface";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { BcryptUtil } from "../../../core/utils/bcrypt.util";
@@ -23,11 +24,13 @@ import { AuthService } from "../../auth/auth.service";
 @UseInterceptors(GqlLoggerInterceptor)
 export class UserResolver {
 
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _userSrv: UserService,
         private readonly _smtpSrv: SmtpConfigService,
         private readonly _authSrv: AuthService,
-        @InjectRepository(UserSql) private readonly _userRepo: Repository<UserSql>,
+        @InjectRepository(UserSql
+    ) private readonly _userRepo: Repository<UserSql>,
         @InjectRepository(SmtpConfigSql) private readonly _smtpRepo: Repository<SmtpConfigSql>
     ) { }
 
@@ -61,7 +64,7 @@ export class UserResolver {
         @Args("id") id: number,
         @Args("user") user: UpdateUser,
         @UUID() uuid: string,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<User> {
         const updatePermisssion = this._authSrv.authorized(ctx.req.user.userGroup, PERMISSION_CATEGORIES.USERS, PERMISSION_TYPES.WRITE);
         if (updatePermisssion) {
@@ -87,7 +90,7 @@ export class UserResolver {
         @Args("search") search: string,
         @Args("sort") sort: UserSort,
         @Args("pagination") pagination: Pagination,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<User[]> {
         const results = await this._userSrv.frontList({ search }, sort, pagination);
         ctx.pagination = results.pagination;
@@ -110,7 +113,7 @@ export class UserResolver {
     @Mutation("createUser")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async create(@Args("data") data: UserInput): Promise<User> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             if (data.password) {
                 data.password = await BcryptUtil.hash(data.password);
             }
@@ -134,12 +137,12 @@ export class UserResolver {
 
     @Mutation("deleteUser")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deleteUser(@Args("id") id: number, @Context() ctx: any): Promise<boolean> {
+    public async deleteUser(@Args("id") id: number, @Context() ctx: GqlContext): Promise<boolean> {
          // check permission delete user
          const deletePermisssion = this._authSrv.authorized(ctx.req.user.userGroup, PERMISSION_CATEGORIES.USERS, PERMISSION_TYPES.DELETE);
          if (deletePermisssion) {
             // return this._userSrv.delete(id);
-            return await getConnection().transaction(async manager => {
+            return await this._dataSource.transaction(async manager => {
                 return await this._userSrv.delete(id, manager);
             }).catch(err => { throw ErrorUtil.get(err); });
          } else {

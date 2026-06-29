@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ProjectLoader } from "../loaders/project.loader";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ProjectSql } from "../entities/project.entity";
-import { Repository, Like, FindConditions, IsNull, SelectQueryBuilder } from "typeorm";
+import { Repository, Like, FindOptionsWhere, IsNull, SelectQueryBuilder } from "typeorm";
 import { Project, ProjectInput, ProjectUpdate, ProjectSort, ProjectFilter } from "../interfaces/project.interface";
 import { BaseSqlService } from "../../../core/services/base-sql.service";
 import { ErrorUtil } from "../../../core/utils/error.util";
@@ -35,7 +35,7 @@ export class ProjectService extends BaseSqlService<ProjectSql, ProjectInput, Pro
      */
     public async list(search: string): Promise<Project[]> {
         try {
-            const where: FindConditions<ProjectSql> = { deletedAt: IsNull() };
+            const where: FindOptionsWhere<ProjectSql> = { deletedAt: IsNull() };
             if (search) { where.reference = Like(`%${search}%`); }
 
             return super.getList(where, { id: "DESC" });
@@ -131,7 +131,7 @@ export class ProjectService extends BaseSqlService<ProjectSql, ProjectInput, Pro
      */
     public async findByProperty(projectProperties: Project){
         try {
-            let project =  await this.projectRepo.findOne({ where: projectProperties });
+            let project =  await this.projectRepo.findOneBy(projectProperties as any);
             return project;
         } catch (e) {
             throw ErrorUtil.get(e);

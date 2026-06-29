@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, Mutation, Parent, ResolveProperty, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Query, Args, Mutation, Parent, ResolveField, Context } from "@nestjs/graphql";
 import { PriceRequest, PriceRequestInput, PriceRequestUpdate, PriceRequestFilter, PriceRequestSort } from "../interfaces/price-request.interface";
 import { UseInterceptors, InternalServerErrorException, BadRequestException } from "@nestjs/common";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
@@ -16,7 +17,7 @@ import { AmalgamService } from "../services/amalgam.service";
 import { WinstonLogger } from "../../common/logger/winston.logger";
 import { PriceRequestElementService } from "../services/price-request-element.service";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { PriceRequestElement } from "../interfaces/price-request-element.interface";
 import { AmalgamInput, Amalgam } from "../interfaces/amalgam.interface";
 import { SupplierOfferService } from "../services/supplier-offer.service";
@@ -39,7 +40,8 @@ import { AuthService } from "../../auth/auth.service";
 @UseInterceptors(GqlLoggerInterceptor)
 export class PriceRequestResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _priceRequestSrv: PriceRequestService,
         private readonly _uniqueSrv: UniqueNumberService,
         private readonly _supplyListSrv: SupplyListService,
@@ -61,7 +63,7 @@ export class PriceRequestResolver {
         @Args("filter") filter: PriceRequestFilter,
         @Args("sort") sort: PriceRequestSort,
         @Args("pagination") pagination: Pagination,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<PriceRequest[]> {
         const result = await this._priceRequestSrv.frontList(filter, sort, pagination);
         ctx.pagination = result.pagination;
@@ -92,7 +94,7 @@ export class PriceRequestResolver {
     @Mutation("createPriceRequest")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async createPriceRequest(@Args("data") data: PriceRequestInput, @Usr() user: User, @UUID() uuid: string): Promise<PriceRequest> {
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             data.reference = await this.getNumber(user);
             const priceRequest = await this._priceRequestSrv.createOne(data, user.id, manager);
             await this._uniqueSrv.freeNumber(NUMBER_TYPE.PRICE_REQUEST, user);
@@ -118,7 +120,7 @@ export class PriceRequestResolver {
         // Get last number
         const reference = await this.getNumber(user);
 
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             // Create PriceRequest & free number afterwards
             const priceRequest = await this._priceRequestSrv.createOne({ reference }, user.id, manager);
             await this._uniqueSrv.freeNumber(NUMBER_TYPE.PRICE_REQUEST, user);
@@ -141,13 +143,13 @@ export class PriceRequestResolver {
 
     @Mutation("deletePriceRequest")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deletePriceRequest(@Args("id") id: number, @Context() ctx: any): Promise<boolean> {
+    public async deletePriceRequest(@Args("id") id: number, @Context() ctx: GqlContext): Promise<boolean> {
         if (!(await this._priceRequestAssignationMgr.isPriceRequestEditable(id))) { return false; }
 
         //check permission delete price requests
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.PRICE_REQUESTS,PERMISSION_TYPES.DELETE);
         if(deletepermisssion){
-            return await getConnection().transaction(async manager => {
+            return await this._dataSource.transaction(async manager => {
                 // Free related SupplyList
                 const supplyListFreed = await this._supplyListSrv.forceFreeFromPriceRequest(id, manager);
                 if (!supplyListFreed) { this._logger.warn(`Couldn't free SupplyLists for priceRequest [${id}].`); }
@@ -169,7 +171,7 @@ export class PriceRequestResolver {
 
     @Mutation("updatePriceRequest")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async updatePriceRequest(@Args("id") id: number, @Args("data") data: PriceRequestUpdate, @UUID() uuid: string, @Context() ctx: any): Promise<PriceRequest> {
+    public async updatePriceRequest(@Args("id") id: number, @Args("data") data: PriceRequestUpdate, @UUID() uuid: string, @Context() ctx: GqlContext): Promise<PriceRequest> {
         //check permission update price requests
         let updatepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.PRICE_REQUESTS,PERMISSION_TYPES.WRITE);
         if(updatepermisssion){
@@ -188,7 +190,7 @@ export class PriceRequestResolver {
     @Mutation("assignSupplyListsToPriceRequest")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async assignToPriceRequest(@Args("priceRequestId") priceRequestId: number, @Args("supplyListIds") supplyListIds: number[], @UUID() uuid: string): Promise<boolean> {
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             return await this._priceRequestAssignationMgr.assignSupplyList({ id: priceRequestId }, supplyListIds, manager, uuid);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
@@ -197,7 +199,7 @@ export class PriceRequestResolver {
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async freeFromPriceRequest(@Args("supplyListId") supplyListId: number, @UUID() uuid: string): Promise<boolean> {
         const supplyList: SupplyList = await this._supplyListSrv.getById(supplyListId, uuid);
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             return this._priceRequestAssignationMgr.freeSupplyList(supplyList, manager);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
@@ -211,7 +213,7 @@ export class PriceRequestResolver {
     ): Promise<Amalgam[]> {
         if (!(await this._priceRequestAssignationMgr.isPriceRequestEditable(priceRequestId))) { return []; }
 
-        await getConnection().transaction(async manager => {
+        await this._dataSource.transaction(async manager => {
             const saved = await this._priceRequestAssignationMgr.saveAmalgams(priceRequestId, amalgams, manager);
             if (!saved) { throw new InternalServerErrorException(ERROR_MESSAGE.INTERNAL_SERVER_ERROR, "Couldn't save given amalgams."); }
             // Update last used params
@@ -223,37 +225,37 @@ export class PriceRequestResolver {
         return this._amalgamSrv.list({ priceRequestId });
     }
 
-    @ResolveProperty("supplyLists")
+    @ResolveField("supplyLists")
     public async getSupplyLists(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<SupplyList[]> {
         return await this._supplyListSrv.getSupplyListsByPriceRequest(priceRequest.id, uuid);
     }
 
-    @ResolveProperty("elements")
+    @ResolveField("elements")
     public async getPriceRequestElements(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<PriceRequestElement[]> {
         return this._priceRequestElementSrv.getByPriceRequest(priceRequest.id, uuid);
     }
 
-    @ResolveProperty("supplierOffers")
+    @ResolveField("supplierOffers")
     public async getSupplierOffers(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<SupplierOffer[]> {
         return this._supplierOfferSrv.getByPriceRequest(priceRequest.id, uuid);
     }
 
-    @ResolveProperty("user")
+    @ResolveField("user")
     public async getUser(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<User> {
         return priceRequest.userId ? this._userSrv.getById(priceRequest.userId, uuid) : null;
     }
 
-    @ResolveProperty("additionnalCosts")
+    @ResolveField("additionnalCosts")
     public async getAdditionnalCosts(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<PriceRequestAdditionnalCost[]> {
         return this._priceRequestAdditionnalCostSrv.getByPriceRequest(priceRequest.id, uuid);
     }
 
-    @ResolveProperty("barsetGeneration")
+    @ResolveField("barsetGeneration")
     public async getBarsetGeneration(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<BarsetGeneration> {
         return this._barsetGenerationSrv.getByPriceRequest(priceRequest.id, uuid);
     }
 
-    @ResolveProperty("linkedProjects")
+    @ResolveField("linkedProjects")
     public async getLinkedProjects(@Parent() priceRequest: PriceRequest, @UUID() uuid: string): Promise<Project[]> {
         return this._projectSrv.getByPriceRequest(priceRequest.id, uuid);
     }

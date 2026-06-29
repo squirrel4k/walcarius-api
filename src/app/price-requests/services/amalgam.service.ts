@@ -5,7 +5,7 @@ import { Repository, In, EntityManager } from "typeorm";
 import { Amalgam, AmalgamFilter, AmalgamInput } from "../interfaces/amalgam.interface";
 import { AmalgamPartService } from "./amalgam-part.service";
 import { WinstonLogger } from "../../common/logger/winston.logger";
-import { classToPlain } from "class-transformer";
+import { instanceToPlain } from "class-transformer";
 import { AmalgamPart } from "../interfaces/amalgam-part.interface";
 import { ObjectUtil } from "../../../core/utils/object.util";
 import { ArrayUtil } from "../../../core/utils/array.util";
@@ -122,7 +122,7 @@ export class AmalgamService extends BaseSqlService<AmalgamSql, AmalgamInput, nul
      */
     private prepareForSave(amalgams: AmalgamInput[], priceRequestId: number): AmalgamInput[] {
         return amalgams.map(amalgam => {
-            const input: AmalgamInput = classToPlain(amalgam);
+            const input: AmalgamInput = instanceToPlain(amalgam);
             input.priceRequestId = priceRequestId;
             input.isInStock = input.isInStock == null ? false : input.isInStock;
             if (input.parts) { delete input.parts; }

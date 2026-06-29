@@ -20,7 +20,7 @@ export class ScanPdfSql implements ScanPdf {
     @Column("text", { nullable: true })
     public comment: string;
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     @Column("timestamp", { nullable: true })

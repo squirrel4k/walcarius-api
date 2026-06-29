@@ -56,7 +56,7 @@ export class SupplyCategorySupplierService {
      */
     public async deleteBySupplier(supplierId: number): Promise<boolean> {
         try {
-            const count: number = await this._supplyCategorySupplierRepo.count({ supplierId });
+            const count: number = await this._supplyCategorySupplierRepo.countBy({ supplierId });
 
             return count > 0 ?
                 (await this._supplyCategorySupplierRepo.delete({ supplierId })).affected == count :

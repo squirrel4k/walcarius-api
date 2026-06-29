@@ -41,7 +41,7 @@ export class PurchaseOrderSql implements PurchaseOrder {
     @Column("int", { name: "loginId" })
     public userId: number;
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     @Column("timestamp", { nullable: true })

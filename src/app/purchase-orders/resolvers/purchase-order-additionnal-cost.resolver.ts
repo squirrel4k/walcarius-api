@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent, Mutation, Args } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent, Mutation, Args } from "@nestjs/graphql";
 import { PurchaseOrderAdditionnalCostService } from "../services/purchase-order-additionnal-cost.service";
 import { PurchaseOrderService } from "../services/purchase-order.service";
 import { PurchaseOrderAdditionnalCost, PurchaseOrderAdditionnalCostInput, PurchaseOrderAdditionnalCostUpdate } from "../interfaces/purchase-order-additionnal-cost.interface";
@@ -36,7 +36,7 @@ export class PurchaseOrderAdditionnalCostResolver {
         return this._purchaseOrderAdditionnalCostSrv.delete(id);
     }
 
-    @ResolveProperty("purchaseOrder")
+    @ResolveField("purchaseOrder")
     public async getPurchaseOrder(@Parent() poac: PurchaseOrderAdditionnalCost, @UUID() uuid: string): Promise<PurchaseOrder> {
         return poac.purchaseOrderId ? this._purchaseOrderSrv.getById(poac.purchaseOrderId, uuid) : null;
     }

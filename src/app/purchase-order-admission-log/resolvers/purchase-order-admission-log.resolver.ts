@@ -4,19 +4,21 @@ import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.inter
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { InjectRepository } from "@nestjs/typeorm";
-import { getConnection, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
-import { IpurchaseOrderAdmissionLog, PurchaseOrderAdmissionLogInput } from "../interfaces/purchaseOrderAdmissionLog.interface";
-import { PurchaseOrderAdmissionLogService } from "../services/purchaseOrderAdmissionLog.service";
-import { PurchaseOrderAdmissionLogSql } from "../entities/purchaseOrderAdmissionLog.entity";
+import { IpurchaseOrderAdmissionLog, PurchaseOrderAdmissionLogInput } from "../interfaces/purchase-order-admission-log.interface";
+import { PurchaseOrderAdmissionLogService } from "../services/purchase-order-admission-log.service";
+import { PurchaseOrderAdmissionLogSql } from "../entities/purchase-order-admission-log.entity";
 
 @Resolver("PurchaseOrderAdmissionLog")
 @UseInterceptors(GqlLoggerInterceptor)
 export class PurchaseOrderAdmissionLogResolver {
     
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _purchaseOrderAdmissionLogSrv: PurchaseOrderAdmissionLogService,
-        @InjectRepository(PurchaseOrderAdmissionLogSql) private readonly _purchaseOrderAdmissionLogRepo: Repository<PurchaseOrderAdmissionLogSql>,
+        @InjectRepository(PurchaseOrderAdmissionLogSql
+    ) private readonly _purchaseOrderAdmissionLogRepo: Repository<PurchaseOrderAdmissionLogSql>,
     ) { }
     
     /**
@@ -29,7 +31,7 @@ export class PurchaseOrderAdmissionLogResolver {
     @Mutation("addAdmission")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async addAdmission(@Args("data") data: PurchaseOrderAdmissionLogInput): Promise<IpurchaseOrderAdmissionLog> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             const admission = await this._purchaseOrderAdmissionLogSrv.create(data, transaction);
             return admission;
         }).catch(err => { throw ErrorUtil.get(err); });
@@ -45,6 +47,6 @@ export class PurchaseOrderAdmissionLogResolver {
     @Query("getAdmission")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async getUser(@Args("id") id: number): Promise<IpurchaseOrderAdmissionLog[]> {
-        return await this._purchaseOrderAdmissionLogRepo.find({idElement:id});
+        return await this._purchaseOrderAdmissionLogRepo.find({ where: { idElement: id } });
     }
 }

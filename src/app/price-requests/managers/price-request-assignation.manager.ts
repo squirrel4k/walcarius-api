@@ -47,9 +47,9 @@ export class PriceRequestAssignationManager {
      * @memberof PriceRequestAssignationManager
      */
     public async assignSuppliers(supplyListIds: number[], priceRequestId: number, transaction: EntityManager): Promise<boolean> {
-        const priceRequest = await transaction.findOne(PriceRequestSql, priceRequestId);
+        const priceRequest = await transaction.findOneBy(PriceRequestSql, { id: priceRequestId });
         const suppliers = await this._supplierSrv.getSuppliersBySupplyLists(supplyListIds, transaction);
-        const offers = await transaction.find(SupplierOfferSql, { priceRequestId });
+        const offers = await transaction.find(SupplierOfferSql, { where: { priceRequestId } });
 
         const toSaveIds = suppliers.filter(supplier => !offers.some(offer => supplier.id == offer.supplierId)).map(supplier => supplier.id);
         if (toSaveIds.length == 0) { return true; }
@@ -178,7 +178,7 @@ export class PriceRequestAssignationManager {
         const generated = await this.regenAmalgam(supplyList.priceRequestId, transaction);
 
         const nowSuppliers = await this._supplierSrv.getSuppliersByCategoriesOfPriceRequest(supplyList.priceRequestId, transaction);
-        const offers = await transaction.find(SupplierOfferSql, { priceRequestId: supplyList.priceRequestId });
+        const offers = await transaction.find(SupplierOfferSql, { where: { priceRequestId: supplyList.priceRequestId } });
 
         const toDeleteIds = offers.filter(offer => !offer.isSent && !nowSuppliers.some(supplier => supplier.id == offer.supplierId)).map(offer => offer.id);
         const offerDeleted = toDeleteIds.length > 0 ? await this._supplierOfferSrv.deleteBy({ id: In(toDeleteIds) }, transaction) : true;

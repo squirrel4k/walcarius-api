@@ -49,13 +49,12 @@ import { PurchaseOrderElementController } from "./controllers/purchase-order-ele
 
 // ---- MANAGERS ----
 import { PurchaseOrderPdfManager } from "./managers/purchase-order-pdf.manager";
-import { SmtpConfigService } from "../smtp-config/services/smtp-config.service";
+import { SmtpConfigModule } from "../smtp-config/smtp-config.module";
 import { AuthModule } from "../auth/auth.module";
-import { ScanPdfService } from "../scan-pdf/services/scan-pdf.service";
-import { ScanPdfController } from "../scan-pdf/controllers/scan-pdf.controller";
-import { ScanPdfLoader } from "../scan-pdf/loaders/scan-pdf.loader";
+import { UniqueNumberModule } from "../uniquenumber/uniquenumber.module";
+import { PdfModule } from "../pdf/pdf.module";
 import { ScanPdfModule } from "../scan-pdf/scan-pdf.module";
-import { PurchaseOrderAdmissionLogModule } from "../purchaseOrderAdmissionLog/purchaseOrderAdmissionLog.module";
+import { PurchaseOrderAdmissionLogModule } from "../purchase-order-admission-log/purchase-order-admission-log.module";
 
 @Module({
     imports: [
@@ -65,6 +64,9 @@ import { PurchaseOrderAdmissionLogModule } from "../purchaseOrderAdmissionLog/pu
         SupplierModule,
         PriceRequestModule,
         AuthModule,
+        SmtpConfigModule,
+        UniqueNumberModule,
+        PdfModule,
         UserModule,
         MailerModule,
         forwardRef(() => ScanPdfModule),
@@ -80,7 +82,6 @@ import { PurchaseOrderAdmissionLogModule } from "../purchaseOrderAdmissionLog/pu
         PurchaseOrderLoader,
         PurchaseOrderService,
         PurchaseOrderResolver,
-        SmtpConfigService,
         PurchaseOrderAdditionnalCostLoader,
         PurchaseOrderAdditionnalCostService,
         PurchaseOrderAdditionnalCostResolver,

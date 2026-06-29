@@ -7,7 +7,6 @@ import { AccessGuard } from "../../core/guards/access.guard";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PassportModule } from "@nestjs/passport";
 import { CommonModule } from "../common/common.module";
-import { RedisModule } from "nestjs-redis";
 // ---- ENTITIES ----
 import { PermissionSql } from "./entities/permission.entity";
 
@@ -24,7 +23,6 @@ import { PermissionResolver } from "./resolvers/permission.resolver";
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
         TypeOrmModule.forFeature([PermissionSql]),
-        RedisModule,
         CommonModule
     ],
     controllers: [],

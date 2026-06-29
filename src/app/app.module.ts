@@ -1,6 +1,8 @@
+import { Request } from "express";
 import { Module } from "@nestjs/common";
 // ---- IMPORTS ----
 import { GraphQLModule } from "@nestjs/graphql";
+import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PassportModule } from "@nestjs/passport";
 
@@ -24,17 +26,17 @@ import { JwtInterceptor } from "../core/interceptors/jwt.interceptor";
 import { UuidInterceptor } from "../core/interceptors/uuid.interceptor";
 
 // ---- MISC ----
-import * as GraphqlJSON from "graphql-type-json";
+import GraphqlJSON from "graphql-type-json";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { CORS_OPTIONS } from "../main";
 import { LoaderManager } from "../core/dataloader/loader.manager";
-import { GraphQLError } from "graphql";
+import { GraphQLFormattedError } from "graphql";
 import { ErrorFormatterUtil } from "../core/errors/utils/error-formatter.util";
 import { WinstonLogger } from "./common/logger/winston.logger";
 import { TypeOrmLogger } from "./common/logger/typeorm.logger";
-import { PaginationExtension } from "../core/graphql/extensions/pagination.extension";
+import { PaginationPlugin } from "../core/graphql/extensions/pagination.plugin";
 import { PermissionModule } from "./permission/permission.module";
-import { PurchaseOrderAdmissionLogModule } from "./purchaseOrderAdmissionLog/purchaseOrderAdmissionLog.module";
+import { PurchaseOrderAdmissionLogModule } from "./purchase-order-admission-log/purchase-order-admission-log.module";
 import { ScanPdfModule } from "./scan-pdf/scan-pdf.module";
 import { FileController } from "./files/files.controllers";
 
@@ -54,25 +56,30 @@ import { FileController } from "./files/files.controllers";
         logger: new TypeOrmLogger(process.env.WAL_MYSQL_LOG_CONFIG)
       })
     }),
-    GraphQLModule.forRootAsync({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      driver: ApolloDriver,
       useFactory: (logger: WinstonLogger) => ({
-        formatResponse: (response, wrapper) => {
-          if (wrapper && wrapper.context && wrapper.context.req && wrapper.context.req.requestUUID) {
-            LoaderManager.Mngr.unset(wrapper.context.req.requestUUID);
-          }
-          return response;
-        },
-        formatError: (error: GraphQLError) => ErrorFormatterUtil.format(error, logger),
-        cors: CORS_OPTIONS,
-        context: (req) => ({ ...req }),
-        debug: (process.env.WAL_DEBUG && process.env.WAL_DEBUG === "true") ? true : false,
         typePaths: ["./**/*.graphql"],
         resolvers: { JSON: GraphqlJSON },
-        extensions: [
-          () => new PaginationExtension()
+        context: ({ req }: { req: Request }) => ({ req }),
+        formatError: (error: GraphQLFormattedError) => ErrorFormatterUtil.format(error as any, logger),
+        includeStacktraceInErrorResponses: process.env.WAL_DEBUG === "true",
+        introspection: process.env.WAL_GRAPHQL_INTROSPECTION === "true",
+        plugins: [
+          new PaginationPlugin(),
+          // Nettoyage des DataLoaders en fin de requête
+          {
+            async requestDidStart() {
+              return {
+                async willSendResponse({ contextValue }: { contextValue: any }) {
+                  if (contextValue?.req?.requestUUID) {
+                    LoaderManager.Mngr.unset(contextValue.req.requestUUID);
+                  }
+                }
+              };
+            }
+          }
         ],
-        playground: (process.env.WAL_GRAPHQL_PLAYGROUND && process.env.WAL_GRAPHQL_PLAYGROUND === "true") ? true : false,
-        introspection: (process.env.WAL_GRAPHQL_INTROSPECTION && process.env.WAL_GRAPHQL_INTROSPECTION === "true") ? true : false
       }),
       imports: [CommonModule],
       inject: [WinstonLogger]

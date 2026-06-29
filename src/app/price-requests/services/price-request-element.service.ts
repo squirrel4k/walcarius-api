@@ -1,8 +1,9 @@
-import { Injectable, Inject, forwardRef } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PriceRequestElementSql } from "../entities/price-request-element.entity";
+import { SupplierOfferElementSql } from "../entities/supplier-offer-element.entity";
 import { Repository, In, IsNull, Not, Brackets, EntityManager } from "typeorm";
-import { SupplyListElementService } from "../../projects/services/supply-list-element.service";
+import { SupplyListElementSql } from "../../projects/entities/supply-list-element.entity";
 import { PriceRequestElement, PossiblePriceRequestElement, PriceRequestElementUpdate } from "../interfaces/price-request-element.interface";
 import { amalgamConfig } from "../config/amalgam.config";
 import { AmalgamConfig, AmalgamCategory } from "../interfaces/amalgam.interface";
@@ -26,7 +27,6 @@ import { MatterService } from "../../elements/services/matter.service";
 import { PaginationUtil } from "../../../core/utils/pagination.util";
 import { FilterPurchaseOrderElement } from "src/app/purchase-orders/interfaces/purchase-order-element.interface";
 import { Pagination, PaginationResult } from "src/core/interfaces/crud.interface";
-import { SupplierOfferElementService } from "../services/supplier-offer-element.service";
 
 interface InputData {
     amalgamGroup: AmalgamGroup;
@@ -42,7 +42,6 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
         priceRequestElementLoader: PriceRequestElementLoader,
         private readonly _priceRequestElementByPriceRequestLoader: PriceRequestElementByPriceRequestLoader,
         private readonly _amalgamGroupSrv: AmalgamGroupService,
-        private readonly _supplyListElementSrv: SupplyListElementService,
         private readonly _matterSrv: MatterService,
         private readonly _bestPriceByPriceRequestElementLoader: BestPriceByPriceRequestElementLoader,
         private readonly _bestTimeByPriceRequestElementLoader: BestTimeByPriceRequestElementLoader,
@@ -51,7 +50,7 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
         private readonly _purchaseOrderQuantityByPriceRequestElementLoader: PurchaseOrderQuantityByPriceRequestElementLoader,
         private readonly _hasPriceByPriceRequestElementLoader: HasPriceByPriceRequestElementLoader,
         private readonly _priceRequestElementOptionSrv: PriceRequestElementOptionService,
-        @Inject(forwardRef(() => SupplierOfferElementService)) private readonly _supplierOfferElementService: SupplierOfferElementService,
+        @InjectRepository(SupplierOfferElementSql) private readonly _supplierOfferElementRepo: Repository<SupplierOfferElementSql>,
         private readonly _weightCalculatorMgr: WeightCalculatorManager,
         private readonly _logger: WinstonLogger
     ) {
@@ -86,7 +85,7 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
      */
     public async createForNotAmalgams(priceRequestId: number, supplyListIds: number[], manager: EntityManager): Promise<PriceRequestElement[]> {
         try {
-            const slElements = await this._supplyListElementSrv.getNonAmalgamElementsFromSupplyLists(supplyListIds, this._amalgamConfig.usedCategoryIds, manager);
+            const slElements = await manager.createQueryBuilder(SupplyListElementSql, "sle").select(["sle.*", "sc.name AS supplyCategoryName"]).leftJoin("supplyCategories", "sc", "sle.supplyCategoryId = sc.id").where("sle.supplyListId IN (:...listIds)", { listIds: supplyListIds }).andWhere("sle.supplyCategoryId NOT IN (:...catIds)", { catIds: this._amalgamConfig.usedCategoryIds }).getRawMany();
 
             // Create priceRequestElements for each non-amalgamable SLElement
             const prElements = slElements.map(slElement => {
@@ -110,7 +109,7 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
      */
         public async updateForNotAmalgams(priceRequestId: number, supplyListIds: number[], manager: EntityManager, uuid: string): Promise<PriceRequestElement[]> {
             try {
-                const slElements = await this._supplyListElementSrv.getNonAmalgamElementsFromSupplyLists(supplyListIds, this._amalgamConfig.usedCategoryIds, manager);
+                const slElements = await manager.createQueryBuilder(SupplyListElementSql, "sle").select(["sle.*", "sc.name AS supplyCategoryName"]).leftJoin("supplyCategories", "sc", "sle.supplyCategoryId = sc.id").where("sle.supplyListId IN (:...listIds)", { listIds: supplyListIds }).andWhere("sle.supplyCategoryId NOT IN (:...catIds)", { catIds: this._amalgamConfig.usedCategoryIds }).getRawMany();
                 const priceRequestElements = await this.getByPriceRequest(priceRequestId, uuid)
                 // Create priceRequestElements for each non-amalgamable SLElement
                 const alreadyExistingSupplyList = priceRequestElements.map(pre => ({
@@ -139,7 +138,7 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
      */
     public async deleteForNotAmalgams(supplyListId: number, manager: EntityManager): Promise<boolean> {
         try {
-            const slElements = await this._supplyListElementSrv.getNonAmalgamElementsFromSupplyLists([supplyListId], this._amalgamConfig.usedCategoryIds, manager);
+            const slElements = await manager.createQueryBuilder(SupplyListElementSql, "sle").select(["sle.*", "sc.name AS supplyCategoryName"]).leftJoin("supplyCategories", "sc", "sle.supplyCategoryId = sc.id").where("sle.supplyListId IN (:...listIds)", { listIds: [supplyListId] }).andWhere("sle.supplyCategoryId NOT IN (:...catIds)", { catIds: this._amalgamConfig.usedCategoryIds }).getRawMany();
             const slElementIds = slElements.map(el => el.id);
 
             return slElementIds.length > 0 ? (await manager.delete(PriceRequestElementSql, { supplyListElementId: In(slElementIds) })).affected == slElements.length : true;
@@ -159,7 +158,7 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
      */
     public async associateForAmalgamGroups(priceRequestId: number, amalgamGroups: AmalgamGroup[], transaction: EntityManager): Promise<PriceRequestElement[]> {
         try {
-            const databasePRE = await transaction.find(PriceRequestElementSql, { priceRequestId, amalgamGroupId: Not(IsNull()) });
+            const databasePRE = await transaction.find(PriceRequestElementSql, { where: { priceRequestId, amalgamGroupId: Not(IsNull()) } });
             const countByGroup = await this._amalgamGroupSrv.getAmalgamCountByGroup(amalgamGroups, transaction);
 
             const { toCreate, toUpdate, toDelete, alreadyValid } = this.filterPriceRequestElements(priceRequestId, databasePRE, amalgamGroups, countByGroup);
@@ -188,7 +187,13 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
     public async deleteByIds(deleteIds: number[], transaction?: EntityManager): Promise<boolean> {
         try {
             const optionDeleted = await this._priceRequestElementOptionSrv.deleteBy({ priceRequestElementId: In(deleteIds) }, transaction);
-            const offersDeleted = await this._supplierOfferElementService.deleteBy({ priceRequestElementId: In(deleteIds) }, transaction)
+            const soeCond = { priceRequestElementId: In(deleteIds) };
+            const soeCount = transaction
+                ? await transaction.countBy(SupplierOfferElementSql, soeCond)
+                : await this._supplierOfferElementRepo.countBy(soeCond);
+            const offersDeleted = soeCount === 0 || (transaction
+                ? (await transaction.delete(SupplierOfferElementSql, soeCond)).affected === soeCount
+                : (await this._supplierOfferElementRepo.delete(soeCond)).affected === soeCount);
             if (!optionDeleted) { this._logger.warn(`Could not delete following PriceRequestElementOptions for PriceRequestElements [${deleteIds.join(", ")}]`); }
 
             return optionDeleted && offersDeleted && await super.deleteBy({ id: In(deleteIds) }, transaction);
@@ -623,13 +628,12 @@ export class PriceRequestElementService extends BaseSqlService<PriceRequestEleme
                 // Execute query and generate pagination result
                 const listResult = await query.getManyAndCount();
                 const data = listResult[0];
-              
                 return {
-                    data: data,
+                    data,
                     pagination: PaginationUtil.createFromCount(pagination, listResult[1])
                 };
-            } catch (err) {
-                throw ErrorUtil.get(err);
+            } catch (e) {
+                throw ErrorUtil.get(e);
             }
         }
     }

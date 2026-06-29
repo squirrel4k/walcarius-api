@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent } from "@nestjs/graphql";
 import { ElementGroup } from "../interfaces/element-group.interface";
 import { ElementGroupService } from "../services/element-group.service";
 import { ElementService } from "../services/element.service";
@@ -33,24 +33,24 @@ export class ElementGroupResolver {
         return this._elementGroupSrv.getById(id, uuid);
     }
 
-    @ResolveProperty("elementNatureDefinitions")
+    @ResolveField("elementNatureDefinitions")
     public async getElementNatureDefinitions(@Parent() elementGroup: ElementGroup, @UUID() uuid: string): Promise<Nature[]> {
         return this._natureSrv.getNaturesByElementGroup(elementGroup.id, uuid);
     }
 
-    @ResolveProperty("elements")
+    @ResolveField("elements")
     public async getElementsFromGroup(@Parent() elementGroup: ElementGroup, @Args("matterId") matterId: number, @UUID() uuid: string): Promise<Element[]> {
         return !!matterId ?
             this._elementSrv.getByElementGroupAndMatter(elementGroup.id, matterId, uuid) :
             this._elementSrv.getElementByElementGroup(elementGroup.id, uuid);
     }
 
-    @ResolveProperty("category")
+    @ResolveField("category")
     public async getCategory(@Parent() elementGroup: ElementGroup, @UUID() uuid: string): Promise<Category> {
         return elementGroup.categoryId ? await this._categorySrv.getById(elementGroup.categoryId, uuid) : null;
     }
 
-    @ResolveProperty("availableMatters")
+    @ResolveField("availableMatters")
     public async getAvailableMatters(@Parent() elementGroup: ElementGroup, @UUID() uuid: string): Promise<Matter[]> {
         return this._matterSrv.getMattersByElementGroup(elementGroup.id, uuid);
     }

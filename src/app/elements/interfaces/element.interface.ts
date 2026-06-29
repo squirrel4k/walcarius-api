@@ -9,21 +9,25 @@ export interface Element {
     elementGroup?: ElementGroup;
     matterId?: number;
     matter?: Matter;
-    natureValues?: any;
+    material?: string;
+    natureValues?: Record<string, unknown>;
     isOrigin?: boolean;
     deletedAt?: Date;
     amalgamGroups?: AmalgamGroup[];
 }
 
 export interface InputElement {
-    name?: string;
-    elementGroupId?: number;
-    matterId?: number;
-    natureValues?: any;
+    name: string;
+    elementGroupId: number;
+    matterId: number;
+    natureValues?: Record<string, unknown>;
+    isOrigin?: boolean;
 }
 
 export interface UpdateElement {
     name?: string;
+    elementGroupId?: number;
     matterId?: number;
-    natureValues?: any;
+    natureValues?: Record<string, unknown>;
+    isOrigin?: boolean;
 }

@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent, Query, Args, Mutation } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent, Query, Args, Mutation } from "@nestjs/graphql";
 import { SupplierOfferElementOptionService } from "../services/supplier-offer-element-option.service";
 import { SupplierOfferElementService } from "../services/supplier-offer-element.service";
 import { PriceRequestElementOptionService } from "../services/price-request-element-option.service";
@@ -51,12 +51,12 @@ export class SupplierOfferElementOptionResolver {
         return this._supplierOfferElementOptionSrv.delete(id);
     }
 
-    @ResolveProperty("supplierOfferElement")
+    @ResolveField("supplierOfferElement")
     public async getSupplierOfferElement(@Parent() option: SupplierOfferElementOption, @UUID() uuid: string): Promise<SupplierOfferElement> {
         return option.supplierOfferElementId ? this._supplierOfferElementSrv.getById(option.supplierOfferElementId, uuid) : null;
     }
 
-    @ResolveProperty("priceRequestElementOption")
+    @ResolveField("priceRequestElementOption")
     public async getPriceRequestElementOption(@Parent() option: SupplierOfferElementOption, @UUID() uuid: string): Promise<PriceRequestElementOption> {
         return option.priceRequestElementOptionId ? this._priceRequestElementOptionSrv.getById(option.priceRequestElementOptionId, uuid) : null;
     }

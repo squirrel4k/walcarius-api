@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException, NotImplementedException, OnMo
 import { PdfResult, PdfConfiguration } from "../interfaces/pdf.interface";
 import { join } from "path";
 import * as Ejs from "ejs";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 import { pdfConfig, PDF_TEMPLATE } from "../config/pdf.config";
 import { launch, PDFOptions, Browser } from "puppeteer";
 import { FooterManager } from "./footer.manager";

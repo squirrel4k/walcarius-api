@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Parent, ResolveProperty } from "@nestjs/graphql";
+import { Resolver, Query, Args, Parent, ResolveField } from "@nestjs/graphql";
 import { AmalgamService } from "../services/amalgam.service";
 import { AmalgamParam, AmalgamFilter, Amalgam, AmalgamGenerationResult } from "../interfaces/amalgam.interface";
 import { UseInterceptors } from "@nestjs/common";
@@ -11,14 +11,15 @@ import { AmalgamPartService } from "../services/amalgam-part.service";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { AmalgamGroup } from "../interfaces/amalgam-group.interface";
 import { AmalgamGroupService } from "../services/amalgam-group.service";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 
 @Resolver("Amalgam")
 @UseInterceptors(GqlLoggerInterceptor)
 export class AmalgamResolver {
 
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _amalgamMakerMgr: AmalgamMakerManager,
         private readonly _amalgamSrv: AmalgamService,
         private readonly _amalgamPartSrv: AmalgamPartService,
@@ -43,7 +44,7 @@ export class AmalgamResolver {
             lockedAmalgams.forEach(locked => locked.parts.forEach(part => part.supplyListElementId = parseInt(part.supplyListElementId, 10)));
         }
 
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             const generationResult = await this._amalgamMakerMgr.genAmalgams(priceRequestId, params, lockedAmalgams, transaction);
             const amalgamGroups = this._amalgamGroupSrv.generateGroups([...generationResult.amalgams]);
 
@@ -54,14 +55,14 @@ export class AmalgamResolver {
         }).catch(err => { throw ErrorUtil.get(err); });
     }
 
-    @ResolveProperty("amalgamGroup")
+    @ResolveField("amalgamGroup")
     public async getAmalgamGroup(@Parent() amalgam: Amalgam, @UUID() uuid: string): Promise<AmalgamGroup> {
         return amalgam.amalgamGroup ?
             amalgam.amalgamGroup :
             amalgam.amalgamGroupId ? this._amalgamGroupSrv.getById(amalgam.amalgamGroupId, uuid) : null;
     }
 
-    @ResolveProperty("parts")
+    @ResolveField("parts")
     public async getAmalgamParts(@Parent() amalgam: Amalgam, @UUID() uuid: string): Promise<AmalgamPart[]> {
         return amalgam.parts ? amalgam.parts : this._amalgamPartSrv.getByAmalgam(amalgam.id, uuid);
     }

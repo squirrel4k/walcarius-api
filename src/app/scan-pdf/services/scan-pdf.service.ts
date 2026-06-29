@@ -43,7 +43,7 @@ export class ScanPdfService extends BaseSqlService<ScanPdfSql, InputScanPdf, Sca
      */
     public async findByProperty(scanPdfProperties: ScanPdf): Promise<ScanPdfSql[]> {
         try {
-            return this._scanPdfRepo.find({ where: scanPdfProperties });
+            return this._scanPdfRepo.find({ where: scanPdfProperties } as any);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -78,7 +78,7 @@ export class ScanPdfService extends BaseSqlService<ScanPdfSql, InputScanPdf, Sca
      */
     public async findOneScanPdf(id: number) {
         try {
-            let scan =  await this._scanPdfRepo.findOne(id);
+            let scan =  await this._scanPdfRepo.findOneBy({ id });
             return scan;
         } catch (e) {
             throw ErrorUtil.get(e);

@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, ResolveProperty, Parent, Mutation, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Query, Args, ResolveField, Parent, Mutation, Context } from "@nestjs/graphql";
 import { SupplyListService } from "../services/supply-list.service";
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
@@ -14,7 +15,7 @@ import { PriceRequestService } from "../../price-requests/services/price-request
 import { PriceRequest } from "../../price-requests/interfaces/price-request.interface";
 import { SupplyCategory } from "../../suppliers/interfaces/supply-category.interface";
 import { SupplyCategoryService } from "../../suppliers/services/supply-category.service";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { PERMISSION_CATEGORIES } from "../../users/enums/permissioncategories.enum";
@@ -26,7 +27,8 @@ import { PriceRequestAssignationManager } from "../../price-requests/managers/pr
 @UseInterceptors(GqlLoggerInterceptor)
 export class SupplyListResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _supplyListSrv: SupplyListService,
         private readonly _projectSrv: ProjectService,
         private readonly _supplyListElementSrv: SupplyListElementService,
@@ -62,10 +64,10 @@ export class SupplyListResolver {
 
     @Mutation("deleteSupplyList")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async delete(@Args("id") id: number, @Context() ctx: any): Promise<boolean> {
+    public async delete(@Args("id") id: number, @Context() ctx: GqlContext): Promise<boolean> {
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.PROJECTS,PERMISSION_TYPES.DELETE);
         if(deletepermisssion){
-            return await getConnection().transaction(async transaction => {
+            return await this._dataSource.transaction(async transaction => {
                 return this._supplyListSrv.delete(id, transaction);
             }).catch(err => { throw ErrorUtil.get(err); });
         }else{
@@ -75,10 +77,10 @@ export class SupplyListResolver {
 
     @Mutation("deleteSupplyLists")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deleteByIds(@Args("ids") ids: number[], @Context() ctx: any): Promise<boolean> {
+    public async deleteByIds(@Args("ids") ids: number[], @Context() ctx: GqlContext): Promise<boolean> {
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.PROJECTS,PERMISSION_TYPES.DELETE);
         if(deletepermisssion){
-            return await getConnection().transaction(async transaction => {
+            return await this._dataSource.transaction(async transaction => {
                 return this._supplyListSrv.deleteByIds(ids, transaction);
             }).catch(err => { throw ErrorUtil.get(err); });
         }else{
@@ -89,21 +91,21 @@ export class SupplyListResolver {
     @Mutation("createSupplyList")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async create(@Args("data") data: SupplyListInput, @Args("projectId") projectId: number): Promise<SupplyList> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             return await this._supplyListSrv.createOne(data, projectId, transaction);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
 
     @Mutation("updateSupplyList")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async update(@Args("id") id: number, @Args("data") data: SupplyListUpdate, @Context() ctx: any): Promise<SupplyList> {
+    public async update(@Args("id") id: number, @Args("data") data: SupplyListUpdate, @Context() ctx: GqlContext): Promise<SupplyList> {
         if (!(await this._supplyListSrv.isSupplyListEditable(id))) {
             throw new BadRequestException(ERROR_MESSAGE.SUPPLY_LIST_ALREADY_ASSIGNED);
         }
 
         const updatePermisssion = this._authSrv.authorized(ctx.req.user.userGroup, PERMISSION_CATEGORIES.PROJECTS, PERMISSION_TYPES.WRITE);
         if (updatePermisssion) {
-            return await getConnection().transaction(async transaction => {
+            return await this._dataSource.transaction(async transaction => {
                 const supplyList = await this._supplyListSrv.getById(id, ctx.req.requestUUID)
                 // Update elements (elements are always updated at the same time)
                 await this._supplyListElementSrv.updateMultiple(id, data.elements, transaction);
@@ -120,27 +122,27 @@ export class SupplyListResolver {
 
     }
 
-    @ResolveProperty("project")
+    @ResolveField("project")
     public async getProject(@Parent() supplyList: SupplyList, @UUID() uuid: string): Promise<Project> {
         return await this._projectSrv.getById(supplyList.projectId, uuid);
     }
 
-    @ResolveProperty("elements")
+    @ResolveField("elements")
     public async getSupplyListElements(@Parent() supplyList: SupplyList, @UUID() uuid: string): Promise<SupplyListElement[]> {
         return this._supplyListElementSrv.getSupplyListElementsBySupplyList(supplyList.id, uuid);
     }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() supplyList: SupplyList, @UUID() uuid: string): Promise<PriceRequest> {
         return supplyList.priceRequestId ? this._priceRequestSrv.getById(supplyList.priceRequestId, uuid) : null;
     }
 
-    @ResolveProperty("parentSupplyCategories")
+    @ResolveField("parentSupplyCategories")
     public async getParentSupplyCategories(@Parent() supplyList: SupplyList, @UUID() uuid: string): Promise<SupplyCategory[]> {
         return this._supplyCategorySrv.getParentBySupplyList(supplyList.id, uuid);
     }
 
-    @ResolveProperty("infos")
+    @ResolveField("infos")
     public async getInfos(@Parent() supplyList: SupplyList, @UUID() uuid: string): Promise<any> {
         return this._supplyListSrv.getInfos(supplyList.id, uuid);
     }

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SupplyCategorySql } from "../entities/supply-category.entity";
-import { Repository, FindConditions } from "typeorm";
+import { Repository, FindOptionsWhere } from "typeorm";
 import { SupplyCategory, SelectedSupplyCategory, SelectedSupplyCategoryInput } from "../interfaces/supply-category.interface";
 import { SupplyCategorySupplierService } from "./supply-category-supplier.service";
 import { SupplyCategoryLoader } from "../loaders/supply-category.loader";
@@ -36,7 +36,7 @@ export class SupplyCategoryService {
      */
     public async getList(parentSupplyCategoryId?: number): Promise<SupplyCategory[]> {
         try {
-            const where: FindConditions<SupplyCategorySql> = {};
+            const where: FindOptionsWhere<SupplyCategorySql> = {};
             if (parentSupplyCategoryId !== undefined) { where.parentSupplyCategoryId = parentSupplyCategoryId; }
 
             return this._supplyCategoryRepo.find({ where });
@@ -120,7 +120,7 @@ export class SupplyCategoryService {
      */
     public async findByProperty(supplyCategoriesProperties: SupplyCategory) {
         try {
-            return await this._supplyCategoryRepo.findOne({ where: supplyCategoriesProperties });
+            return await this._supplyCategoryRepo.findOneBy(supplyCategoriesProperties as any);
         } catch (e) {
             throw ErrorUtil.get(e);
         }

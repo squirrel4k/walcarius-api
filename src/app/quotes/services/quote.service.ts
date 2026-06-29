@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { QuoteEntity } from "../entities/quote.entity";
-import { Quote, SortQuote, InputQuote, UpdateQuote, DisplayQuote, QuoteSortBy } from "../interfaces/quote.interface";
+import { Quote, SortQuote, InputQuote, UpdateQuote, DisplayQuote, QuoteSortBy, QuoteElement, AdditionalComputing } from "../interfaces/quote.interface";
 import { QuoteProjectService } from "./quote-project.service";
 import { Pagination } from "../../../core/interfaces/crud.interface";
 import { QuoteProject } from "../interfaces/quote-project.interface";
@@ -117,7 +117,7 @@ export class QuoteService {
                 elements: quote.elements || [],
                 updatedAt: new Date().getTimeSeconds(),
             });
-            const updated = await this._quoteRepo.findOne(id);
+            const updated = await this._quoteRepo.findOneBy({ id });
             return this._toInterface(updated);
         } catch (e) {
             throw ErrorUtil.get(e);
@@ -300,7 +300,7 @@ export class QuoteService {
         RESUME_FIELDS.forEach(field => resume[field] = 0);
 
         if (quote.elements && quote.elements.length > 0) {
-            quote.elements.forEach((element: any) => {
+            quote.elements.forEach((element: QuoteElement) => {
                 key = element.useClass;
                 if (RESUME_FIELDS.indexOf(key) !== -1) {
                     resume[key] += element.quantity * element.unitPrice;
@@ -314,8 +314,8 @@ export class QuoteService {
         return resume;
     }
 
-    private computeChildren(resume: { [className: string]: number }, element: any): { [className: string]: number } {
-        element.children.forEach((child: any) => {
+    private computeChildren(resume: { [className: string]: number }, element: QuoteElement): { [className: string]: number } {
+        element.children.forEach((child: QuoteElement) => {
             if (child.additionalComputings && child.additionalComputings.length > 0) {
                 resume = this.computeCustom(resume, element.quantity, child);
             } else {
@@ -325,11 +325,11 @@ export class QuoteService {
         return resume;
     }
 
-    private computeCustom(resume: { [className: string]: number }, elementQuantity: number, custom: any): { [className: string]: number } {
+    private computeCustom(resume: { [className: string]: number }, elementQuantity: number, custom: QuoteElement): { [className: string]: number } {
         if (custom.useClass === "Equerre" && custom.content && custom.content.properties) {
             resume["Folding"] += elementQuantity * custom.quantity * custom.content.properties.foldingPrice;
         }
-        custom.additionalComputings.forEach((computing: any) => {
+        custom.additionalComputings.forEach((computing: AdditionalComputing) => {
             const k = computing.useClass;
             if (RESUME_FIELDS.indexOf(k) !== -1) {
                 resume[k] += elementQuantity * custom.quantity * computing.unitPrice;
@@ -338,7 +338,7 @@ export class QuoteService {
         return resume;
     }
 
-    private computeManipulations(resume: { [className: string]: number }, elementQuantity: number, manip: any): { [className: string]: number } {
+    private computeManipulations(resume: { [className: string]: number }, elementQuantity: number, manip: QuoteElement): { [className: string]: number } {
         let key: string = manip.useClass;
         if (RESUME_FIELDS.indexOf(key) !== -1) {
             if (key === "Drilling") {

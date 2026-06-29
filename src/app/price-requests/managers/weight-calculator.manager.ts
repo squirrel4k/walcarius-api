@@ -57,7 +57,7 @@ export class WeightCalculatorManager {
                 this._logger.warn(`Couldn't find element for weight calculation`);
                 return 0;
             }
-            const volume = ConversionUtil.convert(element.natureValues.A, AreaUnit.MM_2, AreaUnit.M_2) * ConversionUtil.convert(+data.format, LengthUnit.MM, LengthUnit.M);
+            const volume = ConversionUtil.convert(element.natureValues["A"] as number, AreaUnit.MM_2, AreaUnit.M_2) * ConversionUtil.convert(+data.format, LengthUnit.MM, LengthUnit.M);
             return ConversionUtil.convert(volume, VolumeUnit.M_3, VolumeUnit.L) * matter.kgByLiter;
         } else if (data.length && data.width && data.thickness) {
             return ((+data.length * +data.width * +data.thickness) / 1000000) * matter.kgByLiter;

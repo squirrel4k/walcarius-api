@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { BaseSqlLoader } from "../../../core/dataloader/sql/base-sql.loader";
 import { PriceRequestElementSql } from "../entities/price-request-element.entity";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 import { SupplyCategoryService } from "../../suppliers/services/supply-category.service";
 import { SupplyCategory } from "../../suppliers/interfaces/supply-category.interface";
 

@@ -4,7 +4,7 @@ import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.inter
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { InjectRepository } from "@nestjs/typeorm";
-import { getConnection, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { ScanPdfService } from "../services/scan-pdf.service";
 import { ScanPdfSql } from "../entities/scan-pdf.entity";
@@ -14,9 +14,11 @@ import { EditScanPdfInput, InputScanPdf, ScanPdf } from "../interfaces/scan-pdf.
 @UseInterceptors(GqlLoggerInterceptor)
 export class ScanPdfResolver {
     
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _scanPdfSrv: ScanPdfService,
-        @InjectRepository(ScanPdfSql) private readonly _scanPdfRepo: Repository<ScanPdfSql>,
+        @InjectRepository(ScanPdfSql
+    ) private readonly _scanPdfRepo: Repository<ScanPdfSql>,
     ) { }
     
     /**
@@ -29,7 +31,7 @@ export class ScanPdfResolver {
     @Mutation("addScanpdf")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async addScanpdf(@Args("data") data: InputScanPdf): Promise<ScanPdf> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             const scanpdf = await this._scanPdfSrv.create(data, transaction);
             return scanpdf;
         }).catch(err => { throw ErrorUtil.get(err); });
@@ -45,7 +47,7 @@ export class ScanPdfResolver {
     @Mutation("editScanpdf")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async editScanpdf(@Args("id") id: number, @Args("data") data: EditScanPdfInput): Promise<ScanPdf> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             return await this._scanPdfSrv.update(id, data, transaction);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
@@ -66,7 +68,7 @@ export class ScanPdfResolver {
     @Mutation("deleteScanPdf")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async deleteScanPdf(@Args("id") id: number): Promise<boolean> {
-        return await getConnection().transaction(async manager => {   
+        return await this._dataSource.transaction(async manager => {   
             return await this._scanPdfSrv.delete(id, manager);
         }).catch(err => { throw ErrorUtil.get(err); });
     

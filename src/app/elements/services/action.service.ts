@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindConditions, Like, SelectQueryBuilder } from "typeorm";
+import { Repository, FindOptionsWhere, Like, SelectQueryBuilder } from "typeorm";
 import { ActionSql } from "../entities/action.entity";
 import { Action, FilterAction } from "../interfaces/action.interface";
 import { ActionByActionGroupLoader } from "../loaders/action-by-action-group.loader";
@@ -24,7 +24,7 @@ export class ActionService {
      */
     public async searchAction(searchName: string, actionGroupId?: number): Promise<Action[]> {
         try {
-            const where: FindConditions<ActionSql> = {};
+            const where: FindOptionsWhere<ActionSql> = {};
             if (searchName != null) { where.name = Like(`%${searchName}%`); }
             if (actionGroupId != null) { where.actionGroupId = actionGroupId; }
 

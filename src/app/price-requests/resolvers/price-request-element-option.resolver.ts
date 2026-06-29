@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Parent, ResolveProperty, Mutation } from "@nestjs/graphql";
+import { Resolver, Query, Args, Parent, ResolveField, Mutation } from "@nestjs/graphql";
 import { PriceRequestElementOptionService } from "../services/price-request-element-option.service";
 import { UseInterceptors } from "@nestjs/common";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
@@ -56,17 +56,17 @@ export class PriceRequestElementOptionResolver {
         return this._priceRequestElementOptionSrv.delete(id);
     }
 
-    @ResolveProperty("bestPrice")
+    @ResolveField("bestPrice")
     public async getBestPrice(@Parent() option: PriceRequestElementOption, @UUID() uuid: string): Promise<number> {
         return this._priceRequestElementOptionSrv.getBestPrice(option.id, uuid);
     }
 
-    @ResolveProperty("priceRequestElement")
+    @ResolveField("priceRequestElement")
     public async getPriceRequestElement(@Parent() option: PriceRequestElementOption, @UUID() uuid: string): Promise<PriceRequestElement> {
         return option.priceRequestElementId ? this._priceRequestElementSrv.getById(option.priceRequestElementId, uuid) : null;
     }
 
-    @ResolveProperty("supplierOfferElementOptions")
+    @ResolveField("supplierOfferElementOptions")
     public async getSupplierOfferElementOption(@Parent() option: PriceRequestElementOption, @UUID() uuid: string): Promise<SupplierOfferElementOption[]> {
         return this._supplierOfferElementOptionSrv.getByPriceRequestElementOption(option.id, uuid);
     }

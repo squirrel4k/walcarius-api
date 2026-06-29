@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent, Mutation } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent, Mutation } from "@nestjs/graphql";
 import { SupplierContact, SupplierContactInput, SupplierContactUpdate } from "../interfaces/supplier-contact.interface";
 import { SupplierContactService } from "../services/supplier-contact.service";
 import { SupplierService } from "../services/supplier.service";
@@ -8,14 +8,15 @@ import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.inter
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 
 @Resolver("SupplierContact")
 @UseInterceptors(GqlLoggerInterceptor)
 export class SupplierContactResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _supplierContactSrv: SupplierContactService,
         private readonly _supplierSrv: SupplierService
     ) { }
@@ -53,12 +54,12 @@ export class SupplierContactResolver {
     @Mutation("setSupplierContactFavorite")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async setSupplierContactFavorite(@Args("id") id: number, @Args("supplierId") supplierId: number): Promise<boolean> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             return await this._supplierContactSrv.setFavorite(id, supplierId, transaction);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
 
-    @ResolveProperty("supplier")
+    @ResolveField("supplier")
     public async getSupplier(@Parent() supplierContact: SupplierContact, @UUID() uuid: string): Promise<Supplier> {
         return this._supplierSrv.getById(supplierContact.supplierId, uuid);
     }

@@ -1,10 +1,11 @@
-import { Resolver, Mutation, Args, ResolveProperty, Query, Parent, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Mutation, Args, ResolveField, Query, Parent, Context } from "@nestjs/graphql";
 import { QuoteService } from "../services/quote.service";
 import { Usr } from "../../../core/decorators/user.decorator";
 import { User } from "../../users/interfaces/user.interface";
 import { Pagination } from "../../../core/interfaces/crud.interface";
 import { Quote, SortQuote, UpdateQuote, InputQuote, DisplayQuote } from "../interfaces/quote.interface";
-import { BadRequestException, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Request, UseInterceptors } from "@nestjs/common"
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
@@ -14,11 +15,9 @@ import { QuoteProjectService } from "../services/quote-project.service";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { QuoteProject } from "../interfaces/quote-project.interface";
 import { AuthService } from "../../auth/auth.service";
-import {LocalStorage} from "node-localstorage"
 import { PERMISSION_CATEGORIES } from "../../users/enums/permissioncategories.enum";
 import { PERMISSION_TYPES } from "../../users/enums/permissiontypes.enum";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
-import { Request } from "@nestjs/common/decorators";
 
 @Resolver("Quote")
 @UseInterceptors(GqlLoggerInterceptor)
@@ -86,7 +85,7 @@ export class QuoteResolver {
 
     @Mutation("updateQuote")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async updateQuote(@Args("quote") quote: UpdateQuote, @Args("_id") _id: string, @Context() ctx: any
+    public async updateQuote(@Args("quote") quote: UpdateQuote, @Args("_id") _id: string, @Context() ctx: GqlContext
     ): Promise<Quote> {
         let updatepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.QUOTATIONS,PERMISSION_TYPES.WRITE);
         if(updatepermisssion){
@@ -98,7 +97,7 @@ export class QuoteResolver {
 
     @Mutation("deleteQuote")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deleteQuote(@Args("_id") _id: string, @Context() ctx: any): Promise<boolean> {
+    public async deleteQuote(@Args("_id") _id: string, @Context() ctx: GqlContext): Promise<boolean> {
          //check permission delete quotation
          let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.QUOTATIONS,PERMISSION_TYPES.DELETE);
          if(deletepermisssion){
@@ -118,7 +117,7 @@ export class QuoteResolver {
         return this._quoteSrv.duplicate(_id, newNumber, uuid);
     }
 
-    @ResolveProperty("project")
+    @ResolveField("project")
     public async projectResolve(@Parent() quote: Quote, @UUID() uuid: string): Promise<QuoteProject> {
         return this._quoteProjectSrv.getById(quote.projectId, uuid);
     }

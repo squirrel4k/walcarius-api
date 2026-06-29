@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent, Query, Args } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent, Query, Args } from "@nestjs/graphql";
 import { Variant } from "../interfaces/variant.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { SupplyCategory } from "../../suppliers/interfaces/supply-category.interface";
@@ -45,27 +45,27 @@ export class VariantResolver {
         return data.quantity * unitWeight;
     }
 
-    @ResolveProperty("supplyCategory")
+    @ResolveField("supplyCategory")
     public async getSupplyCategory(@Parent() variant: Variant, @UUID() uuid: string): Promise<SupplyCategory> {
         return variant.supplyCategoryId ? this._supplyCategorySrv.getById(variant.supplyCategoryId, uuid) : null;
     }
 
-    @ResolveProperty("element")
+    @ResolveField("element")
     public async getElement(@Parent() variant: Variant, @UUID() uuid: string): Promise<Element> {
         return variant.elementId ? this._elementSrv.getById(variant.elementId, uuid) : null;
     }
 
-    @ResolveProperty("matter")
+    @ResolveField("matter")
     public async getMatter(@Parent() variant: Variant, @UUID() uuid: string): Promise<Matter> {
         return variant.matterId ? this._matterSrv.getById(variant.matterId, uuid) : null;
     }
 
-    @ResolveProperty("options")
+    @ResolveField("options")
     public async getVariantOptions(@Parent() variant: Variant, @UUID() uuid: string): Promise<VariantOption[]> {
         return this._variantOptionSrv.getByVariant(variant.id, uuid);
     }
 
-    @ResolveProperty("purchaseOrderQuantity")
+    @ResolveField("purchaseOrderQuantity")
     public async getPurchaseOrderQuantity(@Parent() variant: Variant, @UUID() uuid: string): Promise<number> {
         return this._variantSrv.getPurchaseOrderQuantity(variant.id, uuid);
     }

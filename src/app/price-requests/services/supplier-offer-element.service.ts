@@ -1,11 +1,12 @@
-import { Injectable, forwardRef, Inject } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { SupplierOfferElementSql } from "../entities/supplier-offer-element.entity";
-import { Repository, EntityManager, In, FindConditions, IsNull } from "typeorm";
+import { PriceRequestElementSql } from "../entities/price-request-element.entity";
+import { Repository, EntityManager, In, FindOptionsWhere, IsNull } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SupplierOfferElement, SupplierOfferElementInpdate } from "../interfaces/supplier-offer-element.interface";
 import { SupplierOfferElementLoader } from "../loaders/supplier-offer-element.loader";
 import { SupplierOfferElementBySupplierOfferLoader } from "../loaders/supplier-offer-element-by-supplier-offer.loader";
-import { classToPlain } from "class-transformer";
+import { instanceToPlain } from "class-transformer";
 import { ArrayUtil } from "../../../core/utils/array.util";
 import { SOElementByPossiblePRElementLoader } from "../loaders/supplier-offer-element-by-possible-price-request-element.loader";
 import { SupplierOfferElementByPriceRequestElementLoader } from "../loaders/supplier-offer-element-by-price-request-element.loader";
@@ -13,7 +14,6 @@ import { VariantService } from "./variant.service";
 import { BaseSqlService } from "../../../core/services/base-sql.service";
 import { SupplierOfferElementOptionService } from "./supplier-offer-element-option.service";
 import { PriceRequestElementUpdate } from "../interfaces/price-request-element.interface";
-import { PriceRequestElementService } from "./price-request-element.service";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { PriceRequestElementOptionService } from "./price-request-element-option.service";
 import { ComputedPriceBySupplierOfferElementLoader } from "../loaders/computed-price-by-supplier-offer-element.loader";
@@ -29,7 +29,7 @@ export class SupplierOfferElementService extends BaseSqlService<SupplierOfferEle
         private readonly _supplierOfferElementByPriceRequestElementLoader: SupplierOfferElementByPriceRequestElementLoader,
         private readonly _variantSrv: VariantService,
         private readonly _supplierOfferElementOptionSrv: SupplierOfferElementOptionService,
-        @Inject(forwardRef(() => PriceRequestElementService)) private readonly _priceRequestElementSrv: PriceRequestElementService,
+        @InjectRepository(PriceRequestElementSql) private readonly _priceRequestElementRepo: Repository<PriceRequestElementSql>,
         private readonly _priceRequestElementOptionSrv: PriceRequestElementOptionService,
         private readonly _computedPriceBySupplierOfferElementLoader: ComputedPriceBySupplierOfferElementLoader
     ) {
@@ -70,8 +70,13 @@ export class SupplierOfferElementService extends BaseSqlService<SupplierOfferEle
                     delete element.priceRequestElement;
                 }
             });
-            // Update weight of PriceRequestElements
-            await this._priceRequestElementSrv.updateMany(preUpdate, transaction);
+            // Update weight of PriceRequestElements (direct repo — no service circular dep)
+            for (const pre of preUpdate) {
+                const { id, ...fields } = pre as PriceRequestElementUpdate & { id: number };
+                if (id) {
+                    await transaction.update(PriceRequestElementSql, id, fields);
+                }
+            }
 
             // Upsert SupplierOfferElements
             const insertable = ArrayUtil.splitArray(data, (element => element.id === undefined || element.id === null));
@@ -146,7 +151,7 @@ export class SupplierOfferElementService extends BaseSqlService<SupplierOfferEle
             }
             const options = current.options;
             delete current.options;
-            const done = (await transaction.update(SupplierOfferElementSql, current.id, classToPlain(current))).raw.affectedRows == 1;
+            const done = (await transaction.update(SupplierOfferElementSql, current.id, instanceToPlain(current))).raw.affectedRows == 1;
 
             if (options && !hasVariant) {
                 await this._supplierOfferElementOptionSrv.upsertMany(options, transaction);
@@ -252,12 +257,12 @@ export class SupplierOfferElementService extends BaseSqlService<SupplierOfferEle
     /**
      * @description Delete all SupplierOfferElements matching the conditions, their options and variants as well
      * @author Quentin Wolfs
-     * @param {FindConditions<SupplierOfferElementSql>} condition
+     * @param {FindOptionsWhere<SupplierOfferElementSql>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof SupplierOfferElementService
      */
-    public async deleteBy(condition: FindConditions<SupplierOfferElementSql>, transaction?: EntityManager): Promise<boolean> {
+    public async deleteBy(condition: FindOptionsWhere<SupplierOfferElementSql>, transaction?: EntityManager): Promise<boolean> {
         try {
             const elements = await super.getBy(condition, transaction);
             if (elements.length == 0) { return true; }
@@ -285,9 +290,9 @@ export class SupplierOfferElementService extends BaseSqlService<SupplierOfferEle
      */
     public async getComputedPrice(id: number, uuid: string): Promise<number> {
         try {
-            return this._computedPriceBySupplierOfferElementLoader.get(uuid).load(id);
-        } catch (err) {
-            throw ErrorUtil.get(err);
+            return await this._computedPriceBySupplierOfferElementLoader.get(uuid).load(id);
+        } catch (e) {
+            throw ErrorUtil.get(e);
         }
     }
 }

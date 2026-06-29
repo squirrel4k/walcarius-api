@@ -16,20 +16,15 @@ export interface SupplierContact {
     supplierOffers?: SupplierOffer[];
 }
 
-export interface SupplierContactFilter {
-    supplierId?: number;
-    deletedAt?: any;
-}
-
 export interface SupplierContactInput {
     firstname?: string;
-    lastname?: string;
+    lastname: string;
     phone?: string;
     mail?: string;
     function?: string;
-    isFavorite?: boolean;
     language?: string;
-    supplierId?: number;
+    supplierId: number;
+    isFavorite?: boolean;
 }
 
 export interface SupplierContactUpdate {
@@ -40,4 +35,10 @@ export interface SupplierContactUpdate {
     function?: string;
     isFavorite?: boolean;
     language?: string;
+}
+
+export interface SupplierContactFilter {
+    supplierId?: number;
+    isFavorite?: boolean;
+    deletedAt?: any;
 }

@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args, Query, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, Mutation, Args, Query, ResolveField, Parent } from "@nestjs/graphql";
 import { SupplierOfferAdditionnalCostService } from "../services/supplier-offer-additionnal-cost.service";
 import { SupplierOfferAdditionnalCostInput, SupplierOfferAdditionnalCost, SupplierOfferAdditionnalCostUpdate, SupplierOfferAdditionnalCostFilter } from "../interfaces/supplier-offer-additionnal-cost.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
@@ -45,12 +45,12 @@ export class SupplierOfferAdditionnalCostResolver {
         return this._supplierOfferAdditionnalCostSrv.update(id, data, uuid);
     }
 
-    @ResolveProperty("supplierOffer")
+    @ResolveField("supplierOffer")
     public async getSupplierOffer(@Parent() soac: SupplierOfferAdditionnalCost, @UUID() uuid: string): Promise<SupplierOffer> {
         return soac.supplierOfferId ? this._supplierOfferSrv.getById(soac.supplierOfferId, uuid) : null;
     }
 
-    @ResolveProperty("priceRequestAdditionnalCost")
+    @ResolveField("priceRequestAdditionnalCost")
     public async getPriceRequestAdditonnalCost(@Parent() soac: SupplierOfferAdditionnalCost, @UUID() uuid: string): Promise<PriceRequestAdditionnalCost> {
         return soac.priceRequestAdditionnalCostId ? this._priceRequestAdditionnalCostSrv.getById(soac.priceRequestAdditionnalCostId, uuid) : null;
     }

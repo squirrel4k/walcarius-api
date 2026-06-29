@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { PossiblePriceRequestElement } from "../interfaces/price-request-element.interface";
 import { SupplyListElement } from "../../projects/interfaces/supply-list-element.interface";
 import { SupplyListElementService } from "../../projects/services/supply-list-element.service";
@@ -26,52 +26,52 @@ export class PossiblePriceRequestElementResolver {
         private readonly _priceRequestElementOptionSrv: PriceRequestElementOptionService
     ) { }
 
-    @ResolveProperty("supplyListElement")
+    @ResolveField("supplyListElement")
     public async getSupplyListElement(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<SupplyListElement> {
         return element.supplyListElementId ? this._supplyListElementSrv.getById(element.supplyListElementId, uuid) : null;
     }
 
-    @ResolveProperty("amalgamGroup")
+    @ResolveField("amalgamGroup")
     public async getAmalgamGroup(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<AmalgamGroup> {
         return element.amalgamGroupId ? this._amalgamGroupSrv.getById(element.amalgamGroupId, uuid) : null;
     }
 
-    @ResolveProperty("supplierOfferElements")
+    @ResolveField("supplierOfferElements")
     public async getSupplierOfferElement(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<SupplierOfferElement[]> {
         return await this._supplierOfferElementSrv.getByPossiblePriceRequestElement(element.id, element.supplierOfferId, uuid);
     }
 
-    @ResolveProperty("parentSupplyCategory")
+    @ResolveField("parentSupplyCategory")
     public async getParentSupplYCategory(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<SupplyCategory> {
         return this._priceRequestElementSrv.getParentSupplyCategory(element.id, uuid);
     }
 
-    @ResolveProperty("bestPrice")
+    @ResolveField("bestPrice")
     public async getBestPrice(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<number> {
         return this._priceRequestElementSrv.getBestPrice(element.id, uuid);
     }
 
-    @ResolveProperty("bestTime")
+    @ResolveField("bestTime")
     public async getBestTime(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<Date> {
         return this._priceRequestElementSrv.getBestTime(element.id, uuid);
     }
 
-    @ResolveProperty("stockQuantity")
+    @ResolveField("stockQuantity")
     public async getStockQuantity(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<number> {
         return element.amalgamGroupId ? this._amalgamGroupSrv.getStockQuantity(element.amalgamGroupId, uuid) : 0;
     }
 
-    @ResolveProperty("purchaseOrderQuantity")
+    @ResolveField("purchaseOrderQuantity")
     public async getPurchaseOrderQuantity(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<number> {
         return this._priceRequestElementSrv.getPurchaseOrderQuantity(element.id, uuid);
     }
 
-    @ResolveProperty("options")
+    @ResolveField("options")
     public async getPriceRequestElementOptions(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<PriceRequestElementOption[]> {
         return this._priceRequestElementOptionSrv.getByPriceRequestElement(element.id, uuid);
     }
 
-    @ResolveProperty("hasPrice")
+    @ResolveField("hasPrice")
     public async getHasPrice(@Parent() element: PossiblePriceRequestElement, @UUID() uuid: string): Promise<boolean> {
         return this._priceRequestElementSrv.getHasPrice(element.id, uuid);
     }

@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { QuoteElement } from "../interfaces/quote.interface";
 
 @Entity({ name: "quotes" })
 export class QuoteEntity {
@@ -6,7 +7,6 @@ export class QuoteEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 
-    /** Alias string pour compatibilité GraphQL (_id: ID) */
     get _id(): string { return this.id?.toString(); }
 
     @Column({ length: 255 })
@@ -21,45 +21,42 @@ export class QuoteEntity {
     @Column()
     public isEn1090: boolean;
 
-    @Column({ type: "int" })
+    @Column("int", { nullable: true })
     public projectId: number;
 
-    /** projectId as string for GraphQL compatibility */
-    get projectIdStr(): string { return this.projectId?.toString(); }
-
-    @Column({ type: "tinyint", default: 0 })
+    @Column("int", { default: 0, nullable: true })
     public status: number;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false, nullable: true })
     public needSandblasting: boolean;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false, nullable: true })
     public needMetallization: boolean;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false, nullable: true })
     public needLacquering: boolean;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false, nullable: true })
     public needPainting: boolean;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false, nullable: true })
     public needGalvanization: boolean;
 
-    @Column({ type: "text", nullable: true })
+    @Column("text", { nullable: true })
     public remarks: string;
 
-    @Column({ type: "float", nullable: true })
+    @Column("decimal", { precision: 10, scale: 2, nullable: true })
     public totalPrice: number;
 
-    @Column({ type: "simple-json", nullable: true })
-    public elements: any;
+    @Column("json", { nullable: true })
+    public elements: QuoteElement[];
 
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "bigint", nullable: true })
     public createdAt: number;
 
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "bigint" })
     public updatedAt: number;
 
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "bigint", nullable: true })
     public deletedAt: number;
 }

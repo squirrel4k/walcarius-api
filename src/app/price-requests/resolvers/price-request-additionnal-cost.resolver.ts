@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent, Query, Args, Mutation } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent, Query, Args, Mutation } from "@nestjs/graphql";
 import { PriceRequestAdditionnalCostService } from "../services/price-request-additionnal-cost.service";
 import { PriceRequestService } from "../services/price-request.service";
 import { PriceRequestAdditionnalCost, PriceRequestAdditionnalCostFilter, PriceRequestAdditionnalCostInput, PriceRequestAdditionnalCostUpdate } from "../interfaces/price-request-additionnal-cost.interface";
@@ -10,14 +10,15 @@ import { SupplierOfferAdditionnalCost } from "../interfaces/supplier-offer-addit
 import { SupplierOfferAdditionnalCostService } from "../services/supplier-offer-additionnal-cost.service";
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 
 @Resolver("PriceRequestAdditionnalCost")
 @UseInterceptors(GqlLoggerInterceptor)
 export class PriceRequestAdditionnalCostResolver {
 
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _priceRequestAdditionnalCostSrv: PriceRequestAdditionnalCostService,
         private readonly _priceRequestSrv: PriceRequestService,
         private readonly _supplierOfferAdditionnalCostSrv: SupplierOfferAdditionnalCostService
@@ -50,23 +51,23 @@ export class PriceRequestAdditionnalCostResolver {
     @Mutation("deletePriceRequestAdditionnalCost")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async deletePriceRequestAdditionnalCost(@Args("id") id: number): Promise<boolean> {
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             await this._supplierOfferAdditionnalCostSrv.deleteBy({ priceRequestAdditionnalCostId: id }, manager);
             return this._priceRequestAdditionnalCostSrv.delete(id, manager);
         }).catch(err => { throw ErrorUtil.get(err); });
     }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() prac: PriceRequestAdditionnalCost, @UUID() uuid: string): Promise<PriceRequest> {
         return prac.priceRequestId ? this._priceRequestSrv.getById(prac.priceRequestId, uuid) : null;
     }
 
-    @ResolveProperty("supplierOfferAdditionnalCosts")
+    @ResolveField("supplierOfferAdditionnalCosts")
     public async getSupplierOfferAddtionnalCosts(@Parent() prac: PriceRequestAdditionnalCost, @UUID() uuid: string): Promise<SupplierOfferAdditionnalCost[]> {
         return this._supplierOfferAdditionnalCostSrv.getByPriceRequestAdditionnalCost(prac.id, uuid);
     }
 
-    @ResolveProperty("bestPrice")
+    @ResolveField("bestPrice")
     public async getBestPrice(@Parent() prac: PriceRequestAdditionnalCost, @UUID() uuid: string): Promise<number> {
         return this._priceRequestAdditionnalCostSrv.getBestPrice(prac.id, uuid);
     }

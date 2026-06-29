@@ -1,4 +1,5 @@
-import { Resolver, Args, ResolveProperty, Parent, Query, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Args, ResolveField, Parent, Query, Context } from "@nestjs/graphql";
 import { Category } from "../interfaces/category.interface";
 import { CategoryService } from "../services/category.service";
 import { ElementGroup } from "../interfaces/element-group.interface";
@@ -31,7 +32,7 @@ export class CategoryResolver {
 
     @Query("categories")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async listCategories(@Args("parentCategoryId") parentCategoryId: number, @Context() ctx: any): Promise<Category[]> {
+    public async listCategories(@Args("parentCategoryId") parentCategoryId: number, @Context() ctx: GqlContext): Promise<Category[]> {
         //check permission read list catalog
         let readpermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.CATALOG,PERMISSION_TYPES.READ);
         if(readpermisssion){
@@ -41,19 +42,19 @@ export class CategoryResolver {
         }
     }
 
-    @ResolveProperty("childrenCategories")
+    @ResolveField("childrenCategories")
     public async getChildrenCategories(@Parent() category: Category, @UUID() uuid: string): Promise<Category[]> {
         return this._categorySrv.getChildrenCategories(category.id, uuid);
     }
 
-    @ResolveProperty("parentCategory")
+    @ResolveField("parentCategory")
     public async getParentCategory(@Parent() category: Category, @UUID() uuid: string): Promise<Category> {
         return category.parentCategory ?
             category.parentCategory :
             (category.parentCategoryId ? await this._categorySrv.getById(category.parentCategoryId, uuid) : null);
     }
 
-    @ResolveProperty("childrenElementGroups")
+    @ResolveField("childrenElementGroups")
     public async getChildrenElementGroups(@Parent() category: Category, @UUID() uuid: string): Promise<ElementGroup[]> {
         return this._elementGroupSrv.getElementGroupByCategory(category.id, uuid);
     }

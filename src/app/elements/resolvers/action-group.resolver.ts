@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent } from "@nestjs/graphql";
 import { ActionGroupService } from "../services/action-group.service";
 import { ActionGroup } from "../interfaces/action-group.interface";
 import { Nature } from "../interfaces/nature.interface";
@@ -30,17 +30,17 @@ export class ActionGroupResolver {
         return this._actionGroupSrv.getById(id, uuid);
     }
 
-    @ResolveProperty("actions")
+    @ResolveField("actions")
     public async getActionsFromGroup(@Parent() actionGroup: ActionGroup, @UUID() uuid: string): Promise<Action[]> {
         return this._actionSrv.getActionByActionGroup(actionGroup.id, uuid);
     }
 
-    @ResolveProperty("parameters")
+    @ResolveField("parameters")
     public async getParametersForActionGroup(@Parent() actionGroup: ActionGroup, @UUID() uuid: string): Promise<Nature[]> {
         return this._natureSrv.getNaturesByActionGroup(actionGroup.id, uuid);
     }
 
-    @ResolveProperty("availableMatters")
+    @ResolveField("availableMatters")
     public async getAvailableMatters(@Parent() actionGroup: ActionGroup, @UUID() uuid: string): Promise<Matter[]> {
         // return this._matterSrv.getMattersForActionGroup(actionGroup.id);
         return this._matterSrv.getMattersByActionGroup(actionGroup.id, uuid);

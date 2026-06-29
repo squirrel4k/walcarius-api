@@ -117,7 +117,7 @@ import { PriceRequestPdfManager } from "./managers/price-request-pdf.manager";
 import { PriceRequestAssignationManager } from "./managers/price-request-assignation.manager";
 import { WeightCalculatorManager } from "./managers/weight-calculator.manager";
 import { PriceCalculatorManager } from "./managers/price-calculator.manager";
-import { SmtpConfigService } from "../smtp-config/services/smtp-config.service";
+import { SmtpConfigModule } from "../smtp-config/smtp-config.module";
 import { AuthModule } from "../auth/auth.module";
 
 @Module({
@@ -136,6 +136,7 @@ import { AuthModule } from "../auth/auth.module";
         SupplierModule,
         UserModule,
         AuthModule,
+        SmtpConfigModule,
         forwardRef(() => ProjectModule)
     ],
     providers: [
@@ -159,7 +160,6 @@ import { AuthModule } from "../auth/auth.module";
         AmalgamByAmalgamGroupLoader,
         PriceRequestElementByPriceRequestLoader,
         AmalgamGroupResolver,
-        SmtpConfigService,
         SupplierOfferService,
         SupplierOfferResolver,
         SupplierOfferLoader,

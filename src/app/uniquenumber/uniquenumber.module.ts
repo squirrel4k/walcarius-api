@@ -14,4 +14,4 @@ import { ReservedNumber } from "./reserved-number.entity";
         UniqueNumberService
     ]
 })
-export class UniqueNumberModule { }
+export class UniqueNumberModule {}

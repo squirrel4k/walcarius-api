@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent, Args, Mutation, Query } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent, Args, Mutation, Query } from "@nestjs/graphql";
 import { SupplierService } from "../../suppliers/services/supplier.service";
 import { SupplierContactService } from "../../suppliers/services/supplier-contact.service";
 import { PriceRequestService } from "../services/price-request.service";
@@ -17,7 +17,7 @@ import { SupplierOfferAdditionnalCostService } from "../services/supplier-offer-
 import { VariantService } from "../services/variant.service";
 import { WinstonLogger } from "../../common/logger/winston.logger";
 import { PriceRequestPdfManager } from "../managers/price-request-pdf.manager";
-import { In, getConnection } from "typeorm";
+import { DataSource, In } from "typeorm";
 import { VariantOptionService } from "../services/variant-option.service";
 import { SupplierOfferElementOptionService } from "../services/supplier-offer-element-option.service";
 import { PriceRequestAdditionnalCostService } from "../services/price-request-additionnal-cost.service";
@@ -33,7 +33,8 @@ import { AdditionnalCostType, AdditionnalCostUnit } from "../interfaces/price-re
 @UseInterceptors(GqlLoggerInterceptor)
 export class SupplierOfferResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _supplierOfferSrv: SupplierOfferService,
         private readonly _smtpConfigSrv: SmtpConfigService,
         private readonly _supplierSrv: SupplierService,
@@ -78,7 +79,7 @@ export class SupplierOfferResolver {
     @Mutation("updateSupplierOffer")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async updateSupplierOffer(@Args("id") id: number, @Args("data") data: SupplierOfferUpdate): Promise<SupplierOffer> {
-        return await getConnection().transaction(async transaction => {
+        return await this._dataSource.transaction(async transaction => {
             // Delete Variant Options
             if (data.deletedVariantOptionIds && data.deletedVariantOptionIds.length > 0) {
                 const variantOptionDeletion = await this._variantOptionSrv.deleteBy({ id: In(data.deletedVariantOptionIds) }, transaction);
@@ -179,43 +180,43 @@ export class SupplierOfferResolver {
         return this._supplierOfferSrv.deletes(ids);
     }
 
-    @ResolveProperty("supplier")
+    @ResolveField("supplier")
     public async getSupplier(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string) {
         return supplierOffer.supplierId ? this._supplierSrv.getById(supplierOffer.supplierId, uuid) : null;
     }
 
-    @ResolveProperty("supplierContact")
+    @ResolveField("supplierContact")
     public async getSupplierContact(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string) {
         return supplierOffer.supplierContactId ? this._supplierContactSrv.getById(supplierOffer.supplierContactId, uuid) : null;
     }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string) {
         return supplierOffer.priceRequestId ? this._priceRequestSrv.getById(supplierOffer.priceRequestId, uuid) : null;
     }
 
-    @ResolveProperty("elements")
+    @ResolveField("elements")
     public async getElements(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string) {
         return supplierOffer.elements && Array.isArray(supplierOffer.elements) ?
             supplierOffer.elements : await this._supplierOfferElementSrv.getBySupplierOffer(supplierOffer.id, uuid);
     }
 
-    @ResolveProperty("totalPrice")
+    @ResolveField("totalPrice")
     public async getTotalPrice(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string) {
         return this._supplierOfferSrv.getTotalPrice(supplierOffer.id, uuid);
     }
 
-    @ResolveProperty("possibleElements")
+    @ResolveField("possibleElements")
     public async getPossibleElements(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string): Promise<PossiblePriceRequestElement[]> {
         return this._priceRequestElementSrv.getPossiblePriceRequestElementByOffer(supplierOffer.id, uuid);
     }
 
-    @ResolveProperty("additionnalCosts")
+    @ResolveField("additionnalCosts")
     public async getAdditionnalCosts(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string): Promise<SupplierOfferAdditionnalCost[]> {
         return this._supplierOfferAdditionnalCostSrv.getBySupplierOffer(supplierOffer.id, uuid);
     }
 
-    @ResolveProperty("totalAdditionnalCosts")
+    @ResolveField("totalAdditionnalCosts")
     public async getTotalAdditionnalCosts(@Parent() supplierOffer: SupplierOffer, @UUID() uuid: string): Promise<number> {
         return this._supplierOfferAdditionnalCostSrv.getTotalPriceBySupplierOffer(supplierOffer.id, uuid);
     }

@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { PurchaseOrderElementOptionService } from "../services/purchase-order-element-option.service";
 import { PurchaseOrderElementService } from "../services/purchase-order-element.service";
 import { PurchaseOrderElementOption } from "../interfaces/purchase-order-element-option.interface";
@@ -16,7 +16,7 @@ export class PurchaseOrderElementOptionResolver {
         private readonly _purchaseOrderElementSrv: PurchaseOrderElementService
     ) { }
 
-    @ResolveProperty("purchaseOrderElement")
+    @ResolveField("purchaseOrderElement")
     public async getPurchaseOrderElement(@Parent() option: PurchaseOrderElementOption, @UUID() uuid: string): Promise<PurchaseOrderElement> {
         return option.purchaseOrderElementId ? this._purchaseOrderElementSrv.getById(option.purchaseOrderElementId, uuid) : null;
     }

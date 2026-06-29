@@ -1,6 +1,6 @@
 import * as winston from "winston";
 import * as DailyRotateFile from "winston-daily-rotate-file";
-import { Logger, Injectable } from "@nestjs/common";
+import { ConsoleLogger, Injectable } from "@nestjs/common";
 import { LoggerOptions } from "./logger.interface";
 import { GraphQLError } from "graphql";
 import { join } from "path";
@@ -9,7 +9,7 @@ import { ErrorLogDto } from "../dto/error.dto";
 const defaultTrace: string = "Trace not provided !";
 
 @Injectable()
-export class WinstonLogger extends Logger {
+export class WinstonLogger extends ConsoleLogger {
 
     private readonly _logger: winston.Logger;
     private readonly _routeLogLevel: string;
@@ -37,7 +37,7 @@ export class WinstonLogger extends Logger {
         }
     }
 
-    public error(error: any, trace: string) {
+    public error(error: unknown, trace: string) {
         if (error instanceof GraphQLError) { this.logGqlError(error); return; }
         const formatted = this.formatErrorForLogs(error);
         const message = formatted.message && typeof formatted.message === "string" ? formatted.message : null;
@@ -48,25 +48,26 @@ export class WinstonLogger extends Logger {
             ...formatted,
         });
         if (process.env.WAL_DEBUG && process.env.WAL_DEBUG == "true") {
-            delete error.args;
+            delete (error as Record<string, unknown>).args;
             super.error(error, trace);
         }
     }
 
-    public logGqlError(error: any) {
-        const message = error.message instanceof Error ? error.message.message : error.message;
-        const trace = error.message instanceof Error ?
-            error.message.stack :
-            error.extensions && error.extensions.exception ? error.extensions.exception.stacktrace : defaultTrace;
+    public logGqlError(error: unknown) {
+        const e = error as Record<string, any>;
+        const message = e.message instanceof Error ? e.message.message : e.message;
+        const trace = e.message instanceof Error ?
+            e.message.stack :
+            e.extensions && e.extensions.exception ? e.extensions.exception.stacktrace : defaultTrace;
         this._logger.error(message, {
             timestamp: this.formatDate(new Date()),
             instance: this.id,
-            path: error.path,
+            path: e.path,
             trace: typeof trace === "string" ? trace.split("\n") : trace
         });
         const displayTrace = Array.isArray(trace) ? trace.join("\n") : trace;
         if (process.env.WAL_DEBUG && process.env.WAL_DEBUG == "true") {
-            super.error({ error: message, path: error.path }, displayTrace);
+            super.error({ error: message, path: e.path }, displayTrace);
         }
     }
 
@@ -78,12 +79,13 @@ export class WinstonLogger extends Logger {
      * @returns {*}
      * @memberof WinstonLogger
      */
-    private formatErrorForLogs(error: any): any {
-        let formatted: any = {};
+    private formatErrorForLogs(error: unknown): Record<string, unknown> {
+        let formatted: Record<string, unknown> = {};
         if (typeof error === "object") {
             formatted = { ...formatted, ...error };
-            if (error.message && typeof error.message === "object") {
-                formatted = { ...error.message, ...formatted };
+            const errMsg = (error as any).message;
+            if (errMsg && typeof errMsg === "object") {
+                formatted = { ...errMsg, ...formatted };
             }
         } else {
             formatted.message = error;
@@ -102,12 +104,12 @@ export class WinstonLogger extends Logger {
         }
     }
 
-    public debug(message: string, toConsole: boolean = true) {
+    public debug(message: any, ...optionalParams: any[]) {
         this._logger.debug(message, {
             timestamp: this.formatDate(new Date()),
             instance: this.id
         });
-        if (toConsole) { super.log(`[DEBUG] ${message}`); }
+        if (optionalParams.length === 0 || optionalParams[0] !== false) { super.log(`[DEBUG] ${message}`); }
     }
 
     /**

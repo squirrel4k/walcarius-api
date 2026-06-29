@@ -100,7 +100,7 @@ export class PurchaseOrderElementSql implements PurchaseOrderElement {
     @OneToMany(type => PurchaseOrderElementOptionSql, poeo => poeo.purchaseOrderElement)
     public options: PurchaseOrderElementOptionSql[];
     
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     public supplierName: string;

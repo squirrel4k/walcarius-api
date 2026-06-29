@@ -21,8 +21,8 @@ export class QuoteProjectService {
     public async create(project: InputQuoteProject): Promise<QuoteProject> {
         try {
             const now = new Date().getTimeSeconds();
-            const entity = this._quoteProjectRepo.create({ ...project, createdAt: now, updatedAt: now });
-            const saved = await this._quoteProjectRepo.save(entity);
+            const entity = this._quoteProjectRepo.create({ ...project, createdAt: now, updatedAt: now } as any);
+            const saved = await this._quoteProjectRepo.save(entity as any) as QuoteProjectEntity;
             if (!saved) { throw new InternalServerErrorException(ERROR_MESSAGE.INTERNAL_SERVER_ERROR, "Couldn't save project"); }
             return this._toInterface(saved);
         } catch (e) {
@@ -34,7 +34,7 @@ export class QuoteProjectService {
         try {
             const id = parseInt(_id, 10);
             await this._quoteProjectRepo.update(id, { ...project, updatedAt: new Date().getTimeSeconds() });
-            const updated = await this._quoteProjectRepo.findOne(id);
+            const updated = await this._quoteProjectRepo.findOneBy({ id });
             return this._toInterface(updated);
         } catch (e) {
             throw ErrorUtil.get(e);

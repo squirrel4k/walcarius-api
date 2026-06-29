@@ -5,13 +5,13 @@ import { BcryptUtil } from "../../core/utils/bcrypt.util";
 import { WinstonLogger } from "../common/logger/winston.logger";
 import { MailerManager } from "../mailer/managers/mailer.manager";
 import { MAIL_TEMPLATES } from "../mailer/enums/templates.enum";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 import { JwtWrapperService } from "../common/jwt/jwt.service";
 import { GRANT_TOKEN, JwtUserPayload } from "../common/jwt/jwt.interface";
 import { User } from "../users/interfaces/user.interface";
 import { UserHistoryService } from "../users/services/userhistory.service";
 import { ERROR_MESSAGE } from "../../core/errors/enum/error.enum";
-import { LocalStorage } from "node-localstorage";
+import { InMemoryStorage } from "../../core/utils/in-memory-storage";
 import { PERMISSION_TYPES } from "../users/enums/permissiontypes.enum";
 import { PermissionService } from "../permission/services/permission.service";
 import { PERMISSION_CATEGORIES } from "../users/enums/permissioncategories.enum";
@@ -122,7 +122,7 @@ export class AuthService {
     public authorized(userGroup: string, category: string, type: string | null, force?: boolean): Boolean {
         try {
             // first we get local storage because we don't want this function to be async
-            let getData = new LocalStorage('./scratch');
+            let getData = new InMemoryStorage();
             let data = JSON.parse(getData.getItem('dataPermission'));
             let selectedPerm = data[userGroup][category];
 

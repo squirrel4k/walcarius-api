@@ -25,7 +25,7 @@ export class ElementSql implements Element {
     public matter: MatterSql;
 
     @Column("json")
-    public natureValues: any;
+    public natureValues: Record<string, unknown>;
 
     @Column("boolean")
     public isOrigin: boolean;

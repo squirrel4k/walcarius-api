@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, Mutation, ResolveProperty, Parent, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Query, Args, Mutation, ResolveField, Parent, Context } from "@nestjs/graphql";
 import { Supplier, SupplierInput, SupplierUpdate, SelectedMattersInput, SelectedMatter } from "../interfaces/supplier.interface";
 import { SupplierService } from "../services/supplier.service";
 import { Access } from "../../../core/decorators/access.decorator";
@@ -10,7 +11,7 @@ import { SupplierContact } from "../interfaces/supplier-contact.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { SupplyCategory } from "../interfaces/supply-category.interface";
 import { SupplyCategoryService } from "../services/supply-category.service";
-import { getConnection, IsNull, Not } from "typeorm";
+import { DataSource, IsNull, Not } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
 import { Matter } from "../../elements/interfaces/matter.interface";
@@ -25,7 +26,8 @@ import { AuthService } from "../../auth/auth.service";
 @UseInterceptors(GqlLoggerInterceptor)
 export class SupplierResolver {
 
-    public constructor (
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _supplierSrv: SupplierService,
         private readonly _supplierContactSrv: SupplierContactService,
         private readonly _supplyCategorySrv: SupplyCategoryService,
@@ -40,7 +42,7 @@ export class SupplierResolver {
         @Args("deleted") isDeleted: boolean,
         @Args("pagination") pagination: Pagination,
         @Args("search") search: string,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<Supplier[]> {
         const result = await this._supplierSrv.frontList({ isDeleted, search }, null, pagination);
         ctx.pagination = result.pagination;
@@ -82,11 +84,11 @@ export class SupplierResolver {
 
     @Mutation("deleteSupplier")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deleteSupplier(@Args("id") id: number, @Context() ctx: any): Promise<boolean> {
+    public async deleteSupplier(@Args("id") id: number, @Context() ctx: GqlContext): Promise<boolean> {
         //check permission delete suppliers
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.SUPPLIERS,PERMISSION_TYPES.DELETE);
         if(deletepermisssion){
-            return await getConnection().transaction(async transaction => {
+            return await this._dataSource.transaction(async transaction => {
                 const deletedContacts = await this._supplierContactSrv.deleteBy({ supplierId: id }, transaction);
     
                 return this._supplierSrv.delete(id);
@@ -98,7 +100,7 @@ export class SupplierResolver {
 
     @Mutation("updateSupplier")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async updateSupplier(@Args("id") id: number, @Args("data") data: SupplierUpdate, @UUID() uuid: string, @Context() ctx: any): Promise<Supplier> {
+    public async updateSupplier(@Args("id") id: number, @Args("data") data: SupplierUpdate, @UUID() uuid: string, @Context() ctx: GqlContext): Promise<Supplier> {
         let updatepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.SUPPLIERS,PERMISSION_TYPES.WRITE);
         if(updatepermisssion){
             const existingCodes = await this._supplierSrv.getBy({ code: data.code, deletedAt: IsNull(), id: Not(id) });
@@ -115,27 +117,27 @@ export class SupplierResolver {
     @Mutation("setMattersOfSupplier")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
     public async setMattersOfSupplier(@Args("supplierId") supplierId: number, @Args("data") data: SelectedMattersInput[]): Promise<boolean> {
-        return getConnection().transaction(async manager => {
+        return this._dataSource.transaction(async manager => {
             return this._supplierMatterSrv.setSelectedMatterForSupplier(supplierId, data, manager);
         });
     }
 
-    @ResolveProperty("contacts")
+    @ResolveField("contacts")
     public async getSupplierContacts(@Parent() supplier: Supplier, @UUID() uuid: string): Promise<SupplierContact[]> {
         return this._supplierContactSrv.getListBySupplier(supplier.id, uuid);
     }
 
-    @ResolveProperty("allSupplyCategories")
+    @ResolveField("allSupplyCategories")
     public async getAllSupplyCategories(@Parent() supplier: Supplier, @UUID() uuid: string): Promise<SupplyCategory[]> {
         return this._supplyCategorySrv.getBySupplier(supplier.id, uuid);
     }
 
-    @ResolveProperty("parentSupplyCategories")
+    @ResolveField("parentSupplyCategories")
     public async getParentSupplyCategories(@Parent() supplier: Supplier, @UUID() uuid: string): Promise<SupplyCategory[]> {
         return this._supplyCategorySrv.getParentBySupplier(supplier.id, uuid);
     }
 
-    @ResolveProperty("matters")
+    @ResolveField("matters")
     public async getMatters(@Parent() supplier: Supplier, @UUID() uuid: string): Promise<Matter[]> {
         return this._supplierSrv.getMatters(supplier.id, uuid);
     }

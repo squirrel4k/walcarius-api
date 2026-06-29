@@ -1,5 +1,4 @@
-import { Controller, Get, Res } from "@nestjs/common";
-import { Param } from "@nestjs/common/decorators";
+import { Controller, Get, Param, Res } from "@nestjs/common"
 import { Response } from "express";
 import { createReadStream,existsSync } from "fs";
 import { join } from "path";

@@ -50,7 +50,7 @@ export class SupplierOfferElementOptionService extends BaseSqlService<SupplierOf
     public async deleteByPriceRequestElementOptions(priceRequestElementOptionIds: number[]): Promise<boolean> {
         try {
             if (priceRequestElementOptionIds.length == 0) { return true; }
-            const count: number = await this._baseRepo.count({ where: { amalgamId: In(priceRequestElementOptionIds) } });
+            const count: number = await this._baseRepo.count({ where: { amalgamId: In(priceRequestElementOptionIds) } as any });
 
             return count > 0 ? (await this._baseRepo.delete({ priceRequestElementOptionId: In(priceRequestElementOptionIds) })).raw.affectedRows == count : true;
         } catch (e) {

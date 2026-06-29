@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { PriceRequestService } from "../services/price-request.service";
 import { BarsetGeneration } from "../interfaces/barset-generation.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
@@ -14,7 +14,7 @@ export class BarsetGenerationResolver {
         private readonly _priceRequestSrv: PriceRequestService
     ) { }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() generation: BarsetGeneration, @UUID() uuid: string): Promise<PriceRequest> {
         return generation.priceRequestId ? this._priceRequestSrv.getById(generation.priceRequestId, uuid) : null;
     }

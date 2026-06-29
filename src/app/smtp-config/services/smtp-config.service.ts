@@ -33,7 +33,7 @@ export class SmtpConfigService {
      */
     public async findByProperty(smtpProperties: SmtpConfig){
         try {
-            let smtp =  await this._smtpRepo.findOne({ where: smtpProperties });
+            let smtp =  await this._smtpRepo.findOneBy(smtpProperties as any);
             if(smtp.password){
                 smtp.password = decrypt(smtp.password);
             }
@@ -52,7 +52,7 @@ export class SmtpConfigService {
     */
     public async findByLoginId(id: number){
         try {
-            return await this._smtpRepo.findOne({ where: {loginId : id} });
+            return await this._smtpRepo.findOneBy({ loginId: id });
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -73,7 +73,7 @@ export class SmtpConfigService {
                 data.password = pass.toString('hex');
             }
             const updated: UpdateResult = await this._smtpRepo.update(id,<SmtpConfigSql>data);
-            const smtp = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._smtpRepo.findOne(id) : null;
+            const smtp = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._smtpRepo.findOneBy({ id }) : null;
             return smtp;
         } catch (e) {
             throw ErrorUtil.get(e);

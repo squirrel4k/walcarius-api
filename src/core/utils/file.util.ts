@@ -1,5 +1,5 @@
 import * as mime from "mime-types";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 import { Response } from "express";
 import { URL } from "url";
 import { F_OK } from "constants";

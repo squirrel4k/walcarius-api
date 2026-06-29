@@ -1,6 +1,6 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { ElementSql } from "../entities/element.entity";
-import { Repository, Like, IsNull, FindConditions, EntityManager, Brackets } from "typeorm";
+import { Repository, Like, IsNull, FindOptionsWhere, EntityManager, Brackets } from "typeorm";
 import { Element, InputElement, UpdateElement } from "../interfaces/element.interface";
 import { NatureService } from "./nature.service";
 import { ElementLoader } from "../loaders/element.loader";
@@ -34,7 +34,7 @@ export class ElementService extends BaseSqlService<ElementSql, InputElement, Upd
      */
     public async searchElement(search: string, elementGroupId: number, matterId: number): Promise<Element[]> {
         try {
-            const where: FindConditions<ElementSql> = {
+            const where: FindOptionsWhere<ElementSql> = {
                 name: Like(`%${search}%`),
                 deletedAt: IsNull(),
             };
@@ -66,7 +66,7 @@ export class ElementService extends BaseSqlService<ElementSql, InputElement, Upd
                 .andWhere("elements.deletedAt IS NULL")
                 .getMany();
 
-            return elements.map(el => el.natureValues.Thickness);
+            return elements.map(el => el.natureValues["Thickness"] as number);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -103,14 +103,14 @@ export class ElementService extends BaseSqlService<ElementSql, InputElement, Upd
      */
     public async updateWithNatureValues(id: number, element: UpdateElement, uuid: string): Promise<Element> {
         try {
-            const oldElement: Element = await this._baseRepo.findOne(id);
+            const oldElement: Element = await this._baseRepo.findOneBy({ id });
             const elementGroupId: number = oldElement.elementGroupId;
             const natures = await this._natureSrv.getNaturesByElementGroup(elementGroupId, uuid);
             const oldNatureValues = typeof oldElement.natureValues == "string" ? JSON.parse(oldElement.natureValues) : oldElement.natureValues;
             const natureValues = this._natureSrv.elementNatureValues(element.natureValues, natures, oldNatureValues);
 
             const updated = await this._baseRepo.update(id, { ...oldElement, ...element, natureValues });
-            return (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._baseRepo.findOne(id) : null;
+            return (updated && updated.raw && updated.raw.affectedRows > 0) ? await this._baseRepo.findOneBy({ id }) : null;
         } catch (e) {
             throw ErrorUtil.get(e);
         }

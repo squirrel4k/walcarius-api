@@ -1,12 +1,12 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SupplyListSql } from "../entities/supply-list.entity";
-import { Repository, IsNull, EntityManager, In, FindConditions } from "typeorm";
+import { Repository, IsNull, EntityManager, In, FindOptionsWhere } from "typeorm";
 import { SupplyListLoader } from "../loaders/supply-list.loader";
 import { SupplyList, SupplyListStatus, SupplyListInput, SupplyListUpdate, SupplyListFilter, SupplyListSort, SupplyListSortBy, SupplyListInfos } from "../interfaces/supply-list.interface";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
 import { SupplyListByProjectLoader } from "../loaders/supply-list-by-project.loader";
-import { classToPlain } from "class-transformer";
+import { instanceToPlain } from "class-transformer";
 import { SupplyListElementService } from "./supply-list-element.service";
 import { WinstonLogger } from "../../common/logger/winston.logger";
 import { SupplyListByPriceRequestLoader } from "../loaders/supply-list-by-price-request.loader";
@@ -39,7 +39,7 @@ export class SupplyListService extends BaseSqlService<SupplyListSql, SupplyListI
      */
     public async list(filter: SupplyListFilter, sort: SupplyListSort): Promise<SupplyList[]> {
         try {
-            const where: FindConditions<SupplyListSql> = {};
+            const where: FindOptionsWhere<SupplyListSql> = {};
 
             if (filter && filter.priceRequestId !== undefined) { where["priceRequestId"] = filter.priceRequestId === null ? IsNull() : filter.priceRequestId; }
             if (filter && filter.projectId !== undefined) { where["projectId"] = filter.projectId === null ? IsNull() : filter.projectId; }
@@ -173,7 +173,7 @@ export class SupplyListService extends BaseSqlService<SupplyListSql, SupplyListI
             // Adapt data for database
             const savableElements = data.elements;
             delete data.elements;
-            const toSave: SupplyList = classToPlain(data);
+            const toSave: SupplyList = instanceToPlain(data);
             toSave.projectId = projectId;
             toSave.status = SupplyListStatus.OPEN;
             const supplyList = await super.create(toSave, transaction);
@@ -201,7 +201,7 @@ export class SupplyListService extends BaseSqlService<SupplyListSql, SupplyListI
     public async update(id: number, data: SupplyListUpdate, extra: string | EntityManager): Promise<SupplyListSql> {
         try {
             // Remove elements from SupplyList before update
-            const toUpdate: SupplyListUpdate = classToPlain(data);
+            const toUpdate: SupplyListUpdate = instanceToPlain(data);
             if (toUpdate.elements) { delete toUpdate.elements; }
 
             return super.update(id, toUpdate, extra);
@@ -224,7 +224,7 @@ export class SupplyListService extends BaseSqlService<SupplyListSql, SupplyListI
         try {
             if (supplyListIds.length == 0) { return true; }
 
-            const supplyLists: SupplyList[] = await transaction.find(SupplyListSql, { id: In(supplyListIds) });
+            const supplyLists: SupplyList[] = await transaction.find(SupplyListSql, { where: { id: In(supplyListIds) } });
             if (supplyLists.some(sl => sl.priceRequestId != null || sl.status != SupplyListStatus.OPEN)) {
                 throw new BadRequestException(ERROR_MESSAGE.SUPPLY_LIST_ALREADY_ASSIGNED);
             }

@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, ResolveProperty, Parent, Mutation, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Query, Args, ResolveField, Parent, Mutation, Context } from "@nestjs/graphql";
 import { PurchaseOrderService } from "../services/purchase-order.service";
 import { UseInterceptors, BadRequestException } from "@nestjs/common";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
@@ -19,7 +20,7 @@ import { User } from "../../users/interfaces/user.interface";
 import { UniqueNumberService } from "../../uniquenumber/uniquenumber.service";
 import { NUMBER_TYPE } from "../../uniquenumber/uniquenumber.interface";
 import { UserService } from "../../users/services/user.service";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { SupplierOfferService } from "../../price-requests/services/supplier-offer.service";
 import { PurchaseOrderAdditionnalCost } from "../interfaces/purchase-order-additionnal-cost.interface";
 import { PurchaseOrderAdditionnalCostService } from "../services/purchase-order-additionnal-cost.service";
@@ -48,7 +49,8 @@ const PATH = require('path');
 @UseInterceptors(GqlLoggerInterceptor)
 export class PurchaseOrderResolver {
 
-    public constructor(
+    constructor(
+        private readonly _dataSource: DataSource,
         private readonly _purchaseOrderSrv: PurchaseOrderService,
         private readonly _smtpConfigSrv: SmtpConfigService,
         private readonly _projectSrv: ProjectService,
@@ -89,7 +91,7 @@ export class PurchaseOrderResolver {
         @Args("search") search: string,
         @Args("sort") sort: PurchaseOrderSort,
         @Args("pagination") pagination: Pagination,
-        @Context() ctx: any,
+        @Context() ctx: GqlContext,
     ): Promise<PurchaseOrder[]> {
         const results = await this._purchaseOrderSrv.frontList({ search }, sort, pagination);
         ctx.pagination = results.pagination;
@@ -124,7 +126,7 @@ export class PurchaseOrderResolver {
     public async purchaseOrdersByProject(
         @Args("projectId") projectId: number,
         @Args("pagination") pagination: Pagination,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<PurchaseOrder[]> {
         const results = await this._purchaseOrderSrv.getByProject(projectId, pagination);
         ctx.pagination = results.pagination;
@@ -173,7 +175,7 @@ export class PurchaseOrderResolver {
         const search: string = this._uniqueSrv.getLastNumberSearchPattern(NUMBER_TYPE.PURCHASE_ORDER);
         const lastNumberFromDb: string = await this._purchaseOrderSrv.getLastPurchaseOrderReference(search);
         const usedPriceRequests: PriceRequest[] = [];
-        const resTransaction = await getConnection().transaction(async transaction => {
+        const resTransaction = await this._dataSource.transaction(async transaction => {
             const createdOrders: PurchaseOrder[] = [];
             for (const input of data) {
                 if (input.elements.some(selected => !selected.priceRequestElementId && !selected.supplierOfferElementId)) {
@@ -257,12 +259,12 @@ export class PurchaseOrderResolver {
 
     @Mutation("deletePurchaseOrder")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async delete(@Args("id") id: number, @Context() ctx: any): Promise<boolean> {
+    public async delete(@Args("id") id: number, @Context() ctx: GqlContext): Promise<boolean> {
 
         //check permission delete purchase orders
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup, PERMISSION_CATEGORIES.PURCHASE_ORDERS, PERMISSION_TYPES.DELETE);
         if (deletepermisssion) {
-            return await getConnection().transaction(async transaction => {
+            return await this._dataSource.transaction(async transaction => {
                 const purchaseOrder = await this._purchaseOrderSrv.getById(id, transaction);
                 if (this._purchaseOrderSrv.isEditable(purchaseOrder)) {
                     // Unlink PriceRequestElements so the PriceRequest becomes editable again
@@ -280,7 +282,7 @@ export class PurchaseOrderResolver {
 
     @Mutation("updatePurchaseOrder")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async update(@Args("id") id: number, @Args("data") data: PurchaseOrderUpdate, @UUID() uuid: string, @Context() ctx: any): Promise<PurchaseOrder> {
+    public async update(@Args("id") id: number, @Args("data") data: PurchaseOrderUpdate, @UUID() uuid: string, @Context() ctx: GqlContext): Promise<PurchaseOrder> {
         // If only remark or internalRemark, update it without checking if editable or not
         //check update permission purchase order
         let updatepermisssion = this._authSrv.authorized(ctx.req.user.userGroup, PERMISSION_CATEGORIES.PURCHASE_ORDERS, PERMISSION_TYPES.WRITE);
@@ -324,57 +326,57 @@ export class PurchaseOrderResolver {
         return false;
     }
 
-    @ResolveProperty("project")
+    @ResolveField("project")
     public async getProject(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<Project> {
         return purchaseOrder.projectId ? this._projectSrv.getById(purchaseOrder.projectId, uuid) : null;
     }
 
-    @ResolveProperty("supplier")
+    @ResolveField("supplier")
     public async getSupplier(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<Supplier> {
         return purchaseOrder.supplierId ? this._supplierSrv.getById(purchaseOrder.supplierId, uuid) : null;
     }
 
-    @ResolveProperty("supplierContact")
+    @ResolveField("supplierContact")
     public async getSupplierContact(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<SupplierContact> {
         return purchaseOrder.supplierContactId ? this._supplierContactSrv.getById(purchaseOrder.supplierContactId, uuid) : null;
     }
 
-    @ResolveProperty("priceRequest")
+    @ResolveField("priceRequest")
     public async getPriceRequest(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<PriceRequest> {
         return purchaseOrder.priceRequestId ? this._priceRequestSrv.getById(purchaseOrder.priceRequestId, uuid) : null;
     }
 
-    @ResolveProperty("user")
+    @ResolveField("user")
     public async getUser(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<PriceRequest> {
         return purchaseOrder.userId ? this._userSrv.getById(purchaseOrder.userId, uuid) : null;
     }
 
-    @ResolveProperty("additionnalCosts")
+    @ResolveField("additionnalCosts")
     public async getAdditionnalCosts(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<PurchaseOrderAdditionnalCost[]> {
         return !purchaseOrder.additionnalCosts ? await this._purchaseOrderAdditionnalCostSrv.getByPurchaseOrder(purchaseOrder.id, uuid) : purchaseOrder.additionnalCosts;
     }
 
-    @ResolveProperty("elements")
+    @ResolveField("elements")
     public async getElements(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<PurchaseOrderElement[]> {
         return !purchaseOrder.elements ? await this._purchaseOrderElementSrv.getByPurchaseOrder(purchaseOrder.id, uuid) : purchaseOrder.elements;
     }
 
-    @ResolveProperty("linkedProjects")
+    @ResolveField("linkedProjects")
     public async getLinkedProjects(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<Project[]> {
         return this._projectSrv.getByPurchaseOrder(purchaseOrder.id, uuid);
     }
 
-    @ResolveProperty("isSent")
+    @ResolveField("isSent")
     public async getIsSent(@Parent() purchaseOrder: PurchaseOrder): Promise<boolean> {
         return purchaseOrder.sendingDate != null;
     }
 
-    @ResolveProperty("totalPrice")
+    @ResolveField("totalPrice")
     public async getTotalPrice(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<number> {
         return this._purchaseOrderSrv.getTotalPrice(purchaseOrder.id, uuid);
     }
 
-    @ResolveProperty("totalAdditionnalCosts")
+    @ResolveField("totalAdditionnalCosts")
     public async getTotalAdditionnalCosts(@Parent() purchaseOrder: PurchaseOrder, @UUID() uuid: string): Promise<number> {
         return this._purchaseOrderSrv.getTotalAdditionnalCosts(purchaseOrder.id, uuid);
     }

@@ -14,7 +14,7 @@ export class ProjectSql implements Project {
     @Column("boolean", { default: false })
     public isEn1090: boolean;
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     @Column("timestamp", { nullable: true })

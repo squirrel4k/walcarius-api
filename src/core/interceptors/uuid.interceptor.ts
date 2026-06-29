@@ -1,7 +1,7 @@
-import { NestInterceptor, Injectable, ExecutionContext } from "@nestjs/common";
+import { NestInterceptor, Injectable, ExecutionContext, CallHandler} from "@nestjs/common";
 import { Observable } from "rxjs";
 import { NestUtil } from "../utils/nest.util";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 
 @Injectable()
 export class UuidInterceptor implements NestInterceptor {
@@ -14,10 +14,10 @@ export class UuidInterceptor implements NestInterceptor {
      * @returns {Observable<any>}
      * @memberof UuidInterceptor
      */
-    public intercept(context: ExecutionContext, call$: Observable<any>): Observable<any> {
+    public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const request = NestUtil.getRequest(context);
         request["requestUUID"] = v4();
 
-        return call$;
+        return next.handle();
     }
 }

@@ -84,8 +84,8 @@ export class GqlLoggerInterceptor {
      * @memberof GqlLoggerInterceptor
      */
     private logException(exception: HttpException, ctx: GqlArgumentsHost, method: string) {
-        const message = exception.message && exception.message.message ?
-            EnumUtil.getKey(ERROR_MESSAGE, exception.message.message) || exception.message.message
+        const message = (exception.message as any) && (exception.message as any).message ?
+            EnumUtil.getKey(ERROR_MESSAGE, (exception.message as any).message) || (exception.message as any).message
             : exception.message;
 
         if (message instanceof Error) {

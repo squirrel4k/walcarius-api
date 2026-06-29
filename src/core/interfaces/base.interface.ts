@@ -5,7 +5,7 @@ export interface Entity {
 }
 
 export interface MongoEntity extends Entity {
-    _id?: any;
+    _id?: string;
     id?: string;
     __v?: string;
 }

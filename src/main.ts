@@ -1,4 +1,5 @@
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { AppModule } from "./app/app.module";
 import * as Dotenv from "dotenv";
 import { WinstonLogger } from "./app/common/logger/winston.logger";
@@ -25,8 +26,8 @@ export const CORS_OPTIONS = {
 async function bootstrap() {
 
   // Bootstrap the application
-  const app = await NestFactory.create(AppModule, {
-    logger: false
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: ["error", "warn", "log"]
   });
 
   const logger = app.get(WinstonLogger);
@@ -45,19 +46,25 @@ async function bootstrap() {
   app.enableCors(CORS_OPTIONS);
 
   // Add static directory
-  app.useStaticAssets(process.env.WAL_STATIC_FILE_DEST);
+  app.useStaticAssets(process.env.WAL_STATIC_FILE_DEST || '');
 
+  console.log("[DEBUG] Initializing translations...");
   // Load base translations
   await TranslationUtil.init([LANG.EN, LANG.FR, LANG.NL], logger);
+  console.log("[DEBUG] Translations done");
 
   const port = process.env.NODE_APP_INSTANCE ?
     parseInt(process.env.WAL_PORT, 10) + parseInt(process.env.NODE_APP_INSTANCE, 10) :
     parseInt(process.env.WAL_PORT, 10);
 
+  console.log(`[DEBUG] Listening on port ${port}...`);
   // Launch application
-  await app.listen(port, () => {
-    logger.log(`Application launched on port ${port}`);
-  });
+  await app.listen(port);
+  console.log("[DEBUG] App started!");
 }
 
-bootstrap();
+bootstrap().catch(err => {
+  console.error("=== BOOTSTRAP ERROR ===");
+  console.error(err);
+  process.exit(1);
+});

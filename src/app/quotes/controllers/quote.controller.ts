@@ -5,7 +5,7 @@ import { Response } from "express";
 import { PdfManager } from "../../pdf/managers/pdf.manager";
 import "../../../core/ext/date";
 import { FileUtil } from "../../../core/utils/file.util";
-import * as v4 from "uuid/v4";
+import { v4 } from "uuid";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { PDF_TEMPLATE } from "../../pdf/config/pdf.config";
 import { TranslationUtil } from "../../../core/utils/translation.util";

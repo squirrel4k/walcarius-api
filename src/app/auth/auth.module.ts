@@ -9,6 +9,7 @@ import { MailerModule } from "../mailer/mailer.module";
 import { APP_GUARD } from "@nestjs/core";
 import { AccessGuard } from "../../core/guards/access.guard";
 import { SmtpConfigModule } from "../smtp-config/smtp-config.module";
+import { PermissionModule } from "../permission/permission.module";
 
 @Module({
     controllers: [
@@ -18,7 +19,8 @@ import { SmtpConfigModule } from "../smtp-config/smtp-config.module";
         CommonModule,
         MailerModule,
         UserModule,
-        SmtpConfigModule
+        SmtpConfigModule,
+        PermissionModule
     ],
     providers: [
         { provide: APP_GUARD, useClass: AccessGuard },

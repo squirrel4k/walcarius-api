@@ -3,9 +3,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, UpdateResult } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { BaseSqlService } from "../../../core/services/base-sql.service";
-import { IpurchaseOrderAdmissionLog, PurchaseOrderAdmissionLogInput } from "../interfaces/purchaseOrderAdmissionLog.interface";
-import { PurchaseOrderAdmissionLogSql } from "../entities/purchaseOrderAdmissionLog.entity";
-import { PurchaseOrderAdmissionLogLoader } from "../loaders/purchaseOrderAdmissionLog.loader";
+import { IpurchaseOrderAdmissionLog, PurchaseOrderAdmissionLogInput } from "../interfaces/purchase-order-admission-log.interface";
+import { PurchaseOrderAdmissionLogSql } from "../entities/purchase-order-admission-log.entity";
+import { PurchaseOrderAdmissionLogLoader } from "../loaders/purchase-order-admission-log.loader";
 
 
 @Injectable()
@@ -43,7 +43,7 @@ export class PurchaseOrderAdmissionLogService extends BaseSqlService<PurchaseOrd
     */
     public async findByProperty(purchaseOrderAdmissionLogProperties: IpurchaseOrderAdmissionLog) {
     try {
-        return await this._purchaseOrderAdmissionLogRepo.find({ where: purchaseOrderAdmissionLogProperties });
+        return await this._purchaseOrderAdmissionLogRepo.find({ where: purchaseOrderAdmissionLogProperties } as any);
     } catch (e) {
         throw ErrorUtil.get(e);
     }

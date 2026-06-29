@@ -15,13 +15,13 @@ export class SupplyListSql implements SupplyList {
     @Column({ length: 100, nullable: true })
     public model: string;
 
-    @Column({ length: 10 })
+    @Column("varchar", { length: 10 })
     public source: SupplyListSource;
 
     @Column("timestamp", { nullable: true })
     public deliveryDate: Date;
 
-    @Column({ length: 15 })
+    @Column("varchar", { length: 15 })
     public status: SupplyListStatus;
 
     @Column("boolean", { default: false })
@@ -33,7 +33,7 @@ export class SupplyListSql implements SupplyList {
     @Column("int", { nullable: true })
     public priceRequestId: number;
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 
     @ManyToOne(type => ProjectSql, project => project.supplyLists)

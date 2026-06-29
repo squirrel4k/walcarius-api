@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { VariantSql } from "../entities/variant.entity";
-import { Repository, EntityManager, FindConditions, FindManyOptions, In } from "typeorm";
+import { Repository, EntityManager, FindOptionsWhere, FindManyOptions, In } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { VariantLoader } from "../loaders/variant.loader";
 import { Variant, VariantInpdate } from "../interfaces/variant.interface";
@@ -94,12 +94,12 @@ export class VariantService extends BaseSqlService<VariantSql, VariantInpdate, V
     /**
      * @description Delete all Variants matching the conditions, and their options as well
      * @author Quentin Wolfs
-     * @param {FindConditions<VariantSql>} condition
+     * @param {FindOptionsWhere<VariantSql>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof VariantService
      */
-    public async deleteBy(condition: FindConditions<VariantSql>, transaction?: EntityManager): Promise<boolean> {
+    public async deleteBy(condition: FindOptionsWhere<VariantSql>, transaction?: EntityManager): Promise<boolean> {
         try {
             const variants = await this.findWithOptions(condition, transaction);
             let optionIds = [];
@@ -118,12 +118,12 @@ export class VariantService extends BaseSqlService<VariantSql, VariantInpdate, V
      * @description Find all variant matching the search criteria with their options
      * @author Quentin Wolfs
      * @private
-     * @param {FindConditions<VariantSql>} condition
+     * @param {FindOptionsWhere<VariantSql>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<Variant[]>}
      * @memberof VariantService
      */
-    private async findWithOptions(condition: FindConditions<VariantSql>, transaction?: EntityManager): Promise<Variant[]> {
+    private async findWithOptions(condition: FindOptionsWhere<VariantSql>, transaction?: EntityManager): Promise<Variant[]> {
         try {
             const options: FindManyOptions<VariantSql> = {
                 where: condition,

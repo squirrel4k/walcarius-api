@@ -1,8 +1,9 @@
-import { Resolver, Query, Args, Mutation, ResolveProperty, Parent, Context } from "@nestjs/graphql";
+import { GqlContext } from "../../../core/interfaces/gql-context.interface";
+import { Resolver, Query, Args, Mutation, ResolveField, Parent, Context } from "@nestjs/graphql";
 import { SortQuoteProject, QuoteProject, InputQuoteProject, UpdateQuoteProject } from "../interfaces/quote-project.interface";
 import { Pagination } from "../../../core/interfaces/crud.interface";
 import { ERROR_MESSAGE } from "../../../core/errors/enum/error.enum";
-import { UseInterceptors, BadRequestException } from "@nestjs/common";
+import { BadRequestException, Req, Request, UseGuards, UseInterceptors } from "@nestjs/common"
 import { QuoteService } from "../services/quote.service";
 import { Quote, DisplayQuote } from "../interfaces/quote.interface";
 import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.interceptor";
@@ -12,9 +13,7 @@ import { QuoteProjectService } from "../services/quote-project.service";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { PERMISSION_CATEGORIES } from "../../users/enums/permissioncategories.enum";
 import { PERMISSION_TYPES } from "../../users/enums/permissiontypes.enum";
-import {LocalStorage} from "node-localstorage"
 import { AuthService } from "../../auth/auth.service";
-import { Req, Request, UseGuards } from "@nestjs/common/decorators";
 
 @Resolver("QuoteProject")
 @UseInterceptors(GqlLoggerInterceptor)
@@ -32,7 +31,7 @@ export class QuoteProjectResolver {
         @Args("pagination") pagination: Pagination,
         @Args("sort") sort: SortQuoteProject,
         @Args("search") search: string,
-        @Context() ctx: any
+        @Context() ctx: GqlContext
     ): Promise<QuoteProject[]> {
         //check permission read list quotation
         let readpermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.QUOTATIONS,PERMISSION_TYPES.READ);
@@ -64,7 +63,7 @@ export class QuoteProjectResolver {
 
     @Mutation("updateQuoteProject")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async updateQuoteProject(@Args("project") project: UpdateQuoteProject, @Args("_id") id: string, @Context() ctx: any): Promise<QuoteProject> {
+    public async updateQuoteProject(@Args("project") project: UpdateQuoteProject, @Args("_id") id: string, @Context() ctx: GqlContext): Promise<QuoteProject> {
         let updatepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.QUOTATIONS,PERMISSION_TYPES.WRITE);
         if(updatepermisssion){
             return this._quoteProjectSrv.update(project, id);
@@ -75,7 +74,7 @@ export class QuoteProjectResolver {
 
     @Mutation("deleteQuoteProject")
     @Access(GRANT_TOKEN.FRONT_ACCESS)
-    public async deleteQuoteProject(@Args("_id") _id: string, @UUID() uuid: string, @Context() ctx: any): Promise<boolean> {
+    public async deleteQuoteProject(@Args("_id") _id: string, @UUID() uuid: string, @Context() ctx: GqlContext): Promise<boolean> {
         const quotes = await this._quoteSrv.getQuotesOfProject(_id, uuid);
         //check permission delete quotation
         let deletepermisssion = this._authSrv.authorized(ctx.req.user.userGroup,PERMISSION_CATEGORIES.QUOTATIONS,PERMISSION_TYPES.DELETE);
@@ -90,17 +89,17 @@ export class QuoteProjectResolver {
         }
     }
 
-    @ResolveProperty("quotes")
+    @ResolveField("quotes")
     public async quotesResolver(@Parent() project: QuoteProject, @UUID() uuid: string): Promise<Quote[]> {
         return this._quoteSrv.getQuotesOfProject(project._id, uuid);
     }
 
-    @ResolveProperty("displayQuotes")
+    @ResolveField("displayQuotes")
     public async getSimpleQuotes(@Parent() project: QuoteProject, @UUID() uuid: string): Promise<DisplayQuote[]> {
         return this._quoteSrv.getDisplayQuotesByProject(project._id, uuid);
     }
 
-    @ResolveProperty("quoteIds")
+    @ResolveField("quoteIds")
     public async getQuoteIds(@Parent() project: QuoteProject, @UUID() uuid: string): Promise<string[]> {
         return (await this._quoteSrv.getQuotesOfProject(project._id, uuid)).map(quote => quote._id);
     }

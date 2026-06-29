@@ -30,13 +30,8 @@ export class ManyToManySqlLoader<T, U> extends BaseSqlLoader<U[]> {
 
     protected async findByIds(ids: number[]): Promise<U[][]> {
         const params = this._params ? this._params : { where: {} };
-        params.where["id"] = In(ids);
-        params.join = {
-            alias: "base",
-            leftJoinAndSelect: {
-                [this._linkRelation]: `base.${this._linkRelation}`
-            }
-        };
+        (params.where as Record<string, unknown>)["id"] = In(ids);
+        (params as any).relations = { [this._linkRelation]: true };
 
         const elements = await this._repository.find(params);
 

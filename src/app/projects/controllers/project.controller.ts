@@ -1,4 +1,5 @@
-import { Controller, Post, UseInterceptors, FileInterceptor, UploadedFile, BadRequestException } from "@nestjs/common";
+import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { RestLoggerInterceptor } from "../../common/interceptors/rest-logger.interceptor";
 import { ReceivedFile } from "../../../core/interfaces/file.interface";
 import { TeklaParserService } from "../services/tekla-parser.service";

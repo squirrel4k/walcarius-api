@@ -4,7 +4,7 @@ import { PurchaseOrderElementInput, PurchaseOrderElementUpdate, PurchaseOrderEle
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PurchaseOrderElementLoader } from "../loaders/purchase-order-elements.loader";
-import { Repository, EntityManager, IsNull, getConnection, UpdateResult } from "typeorm";
+import { DataSource, Repository, EntityManager, IsNull, UpdateResult } from "typeorm";
 import { PurchaseOrderElementByPurchaseOrderLoader } from "../loaders/purchase-order-element-by-purchase-order.loader";
 import { SupplierOfferElement } from "../../price-requests/interfaces/supplier-offer-element.interface";
 import { Variant } from "../../price-requests/interfaces/variant.interface";
@@ -24,8 +24,10 @@ export class PurchaseOrderElementService extends BaseSqlService<PurchaseOrderEle
 
     private _unitConfig: ElementUnitConfig;
 
-    public constructor(
-        @InjectRepository(PurchaseOrderElementSql) private readonly purchaseOrderElementRepo: Repository<PurchaseOrderElementSql>,
+    constructor(
+        private readonly _dataSource: DataSource,
+        @InjectRepository(PurchaseOrderElementSql
+    ) private readonly purchaseOrderElementRepo: Repository<PurchaseOrderElementSql>,
         purchaseOrderElementLoader: PurchaseOrderElementLoader,
         private readonly _purchaseOrderElementByPurchaseOrderLoader: PurchaseOrderElementByPurchaseOrderLoader,
         private readonly _purchaseOrderElementOptionSrv: PurchaseOrderElementOptionService
@@ -37,7 +39,7 @@ export class PurchaseOrderElementService extends BaseSqlService<PurchaseOrderEle
     /**
      * @description Get the list of all PurchaseOrderElement that matches the filter
      * @author Quentin Wolfs
-     * @param {FindConditions<PurchaseOrderElementSql>} filter
+     * @param {FindOptionsWhere<PurchaseOrderElementSql>} filter
      * @returns {Promise<PurchaseOrderElementSql[]>}
      * @memberof PurchaseOrderElementService
      */
@@ -53,7 +55,7 @@ export class PurchaseOrderElementService extends BaseSqlService<PurchaseOrderEle
     * @memberof PurchaseOrderElementService
     */
     public async createPurchaseOrderElement(data: PurchaseOrderElementInput): Promise<PurchaseOrderElement> {
-        return await getConnection().transaction(async manager => {
+        return await this._dataSource.transaction(async manager => {
             // Create top element
             const element = await this.purchaseOrderElementRepo.save(data);
             return element;
@@ -335,7 +337,7 @@ export class PurchaseOrderElementService extends BaseSqlService<PurchaseOrderEle
     public async updatePurchaseOrderElement(data: PurchaseOrderElementUpdate, id:number): Promise<PurchaseOrderElement> {
         try { 
             const updated: UpdateResult = await this.purchaseOrderElementRepo.update(id,<PurchaseOrderElementSql>data);
-            const element = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this.purchaseOrderElementRepo.findOne(id) : null;
+            const element = (updated && updated.raw && updated.raw.affectedRows > 0) ? await this.purchaseOrderElementRepo.findOneBy({ id }) : null;
             return element;
         } catch (e) {
             throw ErrorUtil.get(e);

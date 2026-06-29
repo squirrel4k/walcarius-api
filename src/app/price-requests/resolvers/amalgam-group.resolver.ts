@@ -1,4 +1,4 @@
-import { Resolver, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { AmalgamGroup } from "../interfaces/amalgam-group.interface";
 import { UUID } from "../../../core/decorators/uuid.decorator";
 import { UseInterceptors } from "@nestjs/common";
@@ -23,22 +23,22 @@ export class AmalgamGroupResolver {
         private readonly _amalgamSrv: AmalgamService
     ) { }
 
-    @ResolveProperty("matter")
+    @ResolveField("matter")
     public async getMatter(@Parent() amalgamGroup: AmalgamGroup, @UUID() uuid: string): Promise<Matter> {
         return amalgamGroup.matterId ? this._matterSrv.getById(amalgamGroup.matterId, uuid) : null;
     }
 
-    @ResolveProperty("supplyCategory")
+    @ResolveField("supplyCategory")
     public async getSupplyCategory(@Parent() amalgamGroup: AmalgamGroup, @UUID() uuid: string): Promise<SupplyCategory> {
         return amalgamGroup.supplyCategoryId ? this._supplyCategorySrv.getById(amalgamGroup.supplyCategoryId, uuid) : null;
     }
 
-    @ResolveProperty("element")
+    @ResolveField("element")
     public async getElement(@Parent() amalgamGroup: AmalgamGroup, @UUID() uuid: string): Promise<Element> {
         return amalgamGroup.elementId ? this._elementSrv.getById(amalgamGroup.elementId, uuid) : null;
     }
 
-    @ResolveProperty("amalgams")
+    @ResolveField("amalgams")
     public async getAmalgams(@Parent() amalgamGroup: AmalgamGroup, @UUID() uuid: string): Promise<Amalgam[]> {
         return this._amalgamSrv.getListByAmalgamGroup(amalgamGroup.id, uuid);
     }

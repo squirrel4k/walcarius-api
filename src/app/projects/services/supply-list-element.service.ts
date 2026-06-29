@@ -1,10 +1,10 @@
-import { Inject, Injectable, forwardRef } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SupplyListElementSql } from "../entities/supply-list-element.entity";
 import { Repository, In, EntityManager } from "typeorm";
 import { SupplyListElementBySupplyListLoader } from "../loaders/supply-list-element-by-supply-list.loader";
 import { SupplyListElement, SupplyListElementInput, SupplyListElementUpdate, AmalgamSupplyListElement, QuantityUnit } from "../interfaces/supply-list-element.interface";
-import { classToPlain } from "class-transformer";
+import { instanceToPlain } from "class-transformer";
 import { SupplyListElementLoader } from "../loaders/supply-list-element.loader";
 import { BaseSqlService } from "../../../core/services/base-sql.service";
 import { ErrorUtil } from "../../../core/utils/error.util";
@@ -24,7 +24,7 @@ export class SupplyListElementService extends BaseSqlService<SupplyListElementSq
         supplyListElementLoader: SupplyListElementLoader,
         private readonly _supplyListElementBySupplyListLoader: SupplyListElementBySupplyListLoader,
         private readonly _matterSrv: MatterService,
-        @Inject(forwardRef(() => PriceRequestElementService)) private readonly _priceRequestElementSrv: PriceRequestElementService
+        private readonly _priceRequestElementSrv: PriceRequestElementService
     ) {
         super(supplyListElementRepo, supplyListElementLoader, SupplyListElementSql, false);
     }
@@ -156,7 +156,7 @@ export class SupplyListElementService extends BaseSqlService<SupplyListElementSq
             const matters = await this._matterSrv.getBy({ }, transaction);
 
             // Separate elements to see what needs to be done with each
-            const newElements: any = classToPlain(data);
+            const newElements: any = instanceToPlain(data);
             const { toCreate, toUpdate, toDelete } = this.separateElements(baseElements, newElements);
 
             // Create all new entries

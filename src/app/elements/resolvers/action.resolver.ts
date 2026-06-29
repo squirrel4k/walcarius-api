@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, ResolveProperty, Parent } from "@nestjs/graphql";
+import { Resolver, Query, Args, ResolveField, Parent } from "@nestjs/graphql";
 import { ActionService } from "../services/action.service";
 import { ActionGroupService } from "../services/action-group.service";
 import { MatterService } from "../services/matter.service";
@@ -39,12 +39,12 @@ export class ActionResolver {
         return this._actionSrv.getActionByThickness(actionGroupId, params);
     }
 
-    @ResolveProperty("actionGroup")
+    @ResolveField("actionGroup")
     public async getActionGroup(@Parent() action: Action, @UUID() uuid: string): Promise<ActionGroup> {
         return action.actionGroupId ? await this._actionGroupSrv.getById(action.actionGroupId, uuid) : null;
     }
 
-    @ResolveProperty("matter")
+    @ResolveField("matter")
     public async getMatter(@Parent() action: Action, @UUID() uuid: string): Promise<Matter> {
         return action.matterId ? await this._matterSrv.getById(action.matterId, uuid) : null;
     }

@@ -7,12 +7,13 @@ import { AccessGuard } from "../../core/guards/access.guard";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PassportModule } from "@nestjs/passport";
 import { CommonModule } from "../common/common.module";
-import { RedisModule } from "nestjs-redis";
 import { MailerModule } from "../mailer/mailer.module";
+import { SmtpConfigModule } from "../smtp-config/smtp-config.module";
 
 // ---- ENTITIES ----
 import { UserSql } from "./entities/user.entity";
 import { UserHistorySql } from "./entities/userhistory.entity";
+import { SmtpConfigSql } from "../smtp-config/entities/smtp-config.entity";
 
 // ---- LOADERS ----
 import { UserLoader } from "./loaders/user.loader";
@@ -31,11 +32,11 @@ import { PermissionModule } from "../permission/permission.module";
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
-        TypeOrmModule.forFeature([UserSql, UserHistorySql]),
-        RedisModule,
+        TypeOrmModule.forFeature([UserSql, UserHistorySql, SmtpConfigSql]),
         CommonModule,
         MailerModule,
-        PermissionModule
+        PermissionModule,
+        SmtpConfigModule
     
     ],
     controllers: [],

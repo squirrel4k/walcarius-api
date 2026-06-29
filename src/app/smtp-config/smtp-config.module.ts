@@ -9,7 +9,6 @@ import { AccessGuard } from "../../core/guards/access.guard";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PassportModule } from "@nestjs/passport";
 import { CommonModule } from "../common/common.module";
-import { RedisModule } from "nestjs-redis";
 
 // ---- ENTITIES ----
 import { SmtpConfigSql } from "./entities/smtp-config.entity";
@@ -31,7 +30,6 @@ import { AuthService } from "../auth/auth.service";
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
         TypeOrmModule.forFeature([SmtpConfigSql]),
-        RedisModule,
         CommonModule
     ],
     controllers: [],

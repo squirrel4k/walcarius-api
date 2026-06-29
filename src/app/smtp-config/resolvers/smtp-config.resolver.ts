@@ -5,7 +5,7 @@ import { GqlLoggerInterceptor } from "../../common/interceptors/gql-logger.inter
 import { Access } from "../../../core/decorators/access.decorator";
 import { GRANT_TOKEN } from "../../common/jwt/jwt.interface";
 import { SmtpConfig, SmtpConfigInput, UpdateSmtpConfig } from "../interfaces/smtp-config.interface";
-import { getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { Observable } from "rxjs";
 

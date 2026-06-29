@@ -1,4 +1,4 @@
-import { Repository, FindConditions, EntityManager, UpdateResult, In, FindManyOptions, SelectQueryBuilder, SaveOptions, DeepPartial } from "typeorm";
+import { Repository, FindOptionsWhere, EntityManager, UpdateResult, In, FindManyOptions, SelectQueryBuilder, DeepPartial } from "typeorm";
 import { ManyToOneSqlLoader } from "../dataloader/sql/mto-sql.loader";
 import { ErrorUtil } from "../utils/error.util";
 import { Pagination, Sort, PaginationResult } from "../interfaces/crud.interface";
@@ -44,7 +44,7 @@ export class BaseSqlService<T, C, U> {
         try {
             return typeof extra === "string" ?
                 await this._baseLoader.get(extra).load(id) :
-                await extra.findOne(this._new, id);
+                await extra.findOneBy(this._new, { id } as unknown as FindOptionsWhere<T>);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -53,16 +53,16 @@ export class BaseSqlService<T, C, U> {
     /**
      * @description Find all Entity matching the given condition
      * @author Quentin Wolfs
-     * @param {FindConditions<T>} condition
+     * @param {FindOptionsWhere<T>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof BaseSqlService
      */
-    public async getBy(condition: FindConditions<T>, transaction?: EntityManager): Promise<T[]> {
+    public async getBy(condition: FindOptionsWhere<T>, transaction?: EntityManager): Promise<T[]> {
         try {
             return !!transaction ?
-                await transaction.find(this._new, condition) :
-                await this._baseRepo.find(condition);
+                await transaction.find(this._new, { where: condition }) :
+                await this._baseRepo.find({ where: condition });
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -71,16 +71,16 @@ export class BaseSqlService<T, C, U> {
     /**
      * @description Fine the first Entity matching the given condition
      * @author Quentin Wolfs
-     * @param {FindConditions<T>} condition
+     * @param {FindOptionsWhere<T>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<T>}
      * @memberof BaseSqlService
      */
-    public async getOneBy(condition: FindConditions<T>, transaction?: EntityManager): Promise<T> {
+    public async getOneBy(condition: FindOptionsWhere<T>, transaction?: EntityManager): Promise<T> {
         try {
             return !!transaction ?
-                await transaction.findOne(this._new, condition) :
-                await this._baseRepo.findOne(condition);
+                await transaction.findOneBy(this._new, condition) :
+                await this._baseRepo.findOneBy(condition);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
@@ -94,11 +94,11 @@ export class BaseSqlService<T, C, U> {
      * @returns {Promise<T[]>}
      * @memberof BaseSqlService
      */
-    public async getList(filter: FindConditions<T>, order?: { [P in keyof T]?: "ASC" | "DESC" | 1 | -1 }, transaction?: EntityManager): Promise<T[]> {
+    public async getList(filter: FindOptionsWhere<T>, order?: { [P in keyof T]?: "ASC" | "DESC" | 1 | -1 }, transaction?: EntityManager): Promise<T[]> {
         try {
             const options: FindManyOptions<T> = {
                 where: {},
-                order: order ? order : { }
+                order: (order ? order : { }) as any
             };
 
             if (filter) {
@@ -369,15 +369,15 @@ export class BaseSqlService<T, C, U> {
     /**
      * @description Update all Entities that matches the search criteria to the given values
      * @author Quentin Wolfs
-     * @param {FindConditions<T>} condition
+     * @param {FindOptionsWhere<T>} condition
      * @param {U} data
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof BaseSqlService
      */
-    public async updateBy(condition: FindConditions<T>, data: U, transaction?: EntityManager): Promise<boolean> {
+    public async updateBy(condition: FindOptionsWhere<T>, data: U, transaction?: EntityManager): Promise<boolean> {
         try {
-            const count = await this._baseRepo.count(condition);
+            const count = await this._baseRepo.countBy(condition);
             const result: UpdateResult = !!transaction ?
                 await transaction.update(this._new, condition, <QueryDeepPartialEntity<T>>data) :
                 await this._baseRepo.update(condition, <QueryDeepPartialEntity<T>>data);
@@ -404,16 +404,16 @@ export class BaseSqlService<T, C, U> {
     /**
      * @description Delete all Entity matching the given condition
      * @author Quentin Wolfs
-     * @param {FindConditions<T>} condition
+     * @param {FindOptionsWhere<T>} condition
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof BaseSqlService
      */
-    public async deleteBy(condition: FindConditions<T>, transaction?: EntityManager): Promise<boolean> {
+    public async deleteBy(condition: FindOptionsWhere<T>, transaction?: EntityManager): Promise<boolean> {
         try {
             const count: number = !!transaction ?
-                await transaction.count(this._new, condition) :
-                await this._baseRepo.count(condition);
+                await transaction.countBy(this._new, condition) :
+                await this._baseRepo.countBy(condition);
             if (count == 0) { return true; }
 
             return await this.deleteHardOrSoft(condition, count, transaction);
@@ -426,13 +426,13 @@ export class BaseSqlService<T, C, U> {
      * @description Delete all Entity matching the given condition using transaction (or not)
      * @author Quentin Wolfs
      * @private
-     * @param {FindConditions<T>} condition
+     * @param {FindOptionsWhere<T>} condition
      * @param {number} count
      * @param {EntityManager} [transaction]
      * @returns {Promise<boolean>}
      * @memberof BaseSqlService
      */
-    private async deleteHardOrSoft(condition: FindConditions<T>, count: number, transaction?: EntityManager): Promise<boolean> {
+    private async deleteHardOrSoft(condition: FindOptionsWhere<T>, count: number, transaction?: EntityManager): Promise<boolean> {
         try {
             if (!!transaction) {
                 return this._softDeletable ?

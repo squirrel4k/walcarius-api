@@ -48,6 +48,6 @@ export class PriceRequestElementSql implements PriceRequestElement {
     @OneToMany(type => PriceRequestElementOptionSql, preo => preo.priceRequestElement)
     public options: PriceRequestElementOptionSql[];
 
-    @Column("timestamp", { default: "current_timestamp" })
+    @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     public createdAt: Date;
 }
