@@ -1,0 +1,1 @@
+ALTER TABLE `smtpConfig` ADD `email` VARCHAR(255) NULL DEFAULT NULL;

@@ -1,0 +1,99 @@
+## Global config
+# Port on which the webservice will be started. Will be incremented by one for each instance of cluster
+WAL_PORT=4000
+# URL of the webservice for self-references
+WAL_URL=http://yourBackUrl.something
+# URL of the front application for CORS issues
+WAL_FRONT_URL=http://yourUrl.something
+
+## JWT config
+# Secret for the JWT token generation. Must be strong.
+WAL_AUTH_SECRET_KEY=yourSecret
+# Time before an auth token is set as invalid
+WAL_AUTH_EXPIRE=1h
+
+## MongoDB config
+# URI of the MongoDB server 
+#   mongodb://host:port
+#   mongodb://username@host:port
+#   mongodb://username:password@host:port
+WAL_MONGO_URI=mongodb://127.0.0.1:27017
+# Name of the MongoDB database
+WAL_MONGO_DBNAME=walcarius
+
+## Mysql config
+# Host of the MySQL server
+WAL_MYSQL_HOST=127.0.0.1
+# Port of the MySQL server
+WAL_MYSQL_PORT=3306
+# Usable user of the MySQL server
+WAL_MYSQL_USER=root
+# Password of said user
+WAL_MYSQL_PASSWORD=password
+# Name of the MySQL database
+WAL_MYSQL_DBNAME=db
+# TypeORM log types. Values can be a combinaison of : all, log, info, warn, query, schema, error, migration
+WAL_MYSQL_LOG_CONFIG=error
+
+
+## Redis config
+# Host of the Redis server
+WAL_REDIS_HOST=127.0.0.1
+# Port of the Redis server
+WAL_REDIS_PORT=6379
+# Redis database number. Must be below the number given in Redis config (0 should always be fine)
+WAL_REDIS_DB=1
+
+## Logger config
+# Directory where logs should be stored
+WAL_LOG_DIRECTORY=logs/
+# Name of the combined logs 
+WAL_COMBINED_LOG_FILE=mixed
+# Name of the error logs
+WAL_ERROR_LOG_FILE=error
+# Name of the query logs. If not defined, will log queries in console
+WAL_QUERY_LOG_FILE=queries
+# Log level of called routes in logs. Can be : [error, warning, info, debug]. Default : info 
+WAL_ROUTE_LOG_LEVEL=info
+
+## Nodemailer config
+# Host of your SMTP service
+WAL_MAILER_HOST=yourHost.something
+# Port of your SMTP service
+WAL_MAILER_PORT=2525
+# User of your SMTP service
+WAL_MAILER_USER=user
+# Password of the said user
+WAL_MAILER_PASSWORD=1234
+# Email address used to send mails
+WAL_MAILER_EMAIL=sender@mailer.com
+# Absolute path to the template folder within the project
+WAL_MAILER_TEMPLATES_PATH=absolute/path/to/your/template/folder
+# If set to true, will send mails through the provided SMTP service. Otherwise, can only show a preview. Can be : [true, false]
+WAL_MAILER_SEND=false
+# If not empty and WAL_MAILER_SEND is true, the recipient mail will be overrided by the first filter if it doesn't correspond to the filter
+WAL_MAILER_FILTER=dev@meaweb.com|@meaweb.com|@itdm-group.com
+
+## PDF config
+# Absolute path to the template folder within the project
+WAL_PDF_TEMPLATES_PATH=absolute/path/to/your/template/folder
+
+## I18n config
+# Absolute path to the translation folder. Usually in ./assets/i18n
+WAL_I18N_PATH=absolute/path/to/your/translation/folder
+
+## Files config
+# Absolute path to the static files that should be available on the server
+WAL_STATIC_FILE_DEST=absolute/path/to/your/static/files/folder
+# Absolute path to the "temporary" directory. Used to generate files. This must exist and have permissions
+WAL_TMP_FILE_DEST=absolute/path/to/your/temporary/folder
+
+## Dev exclusive, can be omitted if not in dev
+# Will log extra data if set to true
+WAL_DEBUG=false
+# Enable the GraphQL playground
+WAL_GRAPHQL_PLAYGROUND=false
+# Enable the GraphQL introspection
+WAL_GRAPHQL_INTROSPECTION=false
+# URL of the front application when run locally to avoid problems with CORS
+WAL_LOCAL_FRONT_URL=http://localhost:4200

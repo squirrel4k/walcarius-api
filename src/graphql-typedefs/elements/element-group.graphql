@@ -1,0 +1,15 @@
+type ElementGroup {
+    id: ID!
+    name: String!
+    icon: String!
+    useClass: String!
+    categoryId: ID!
+    elements(matterId: ID): [Element!]
+    category: Category
+    availableMatters: [Matter!]
+    elementNatureDefinitions: [ElementNatureDefinition!]
+}
+
+type Query {
+    getElementGroupById(elementGroupId: ID!): ElementGroup
+}

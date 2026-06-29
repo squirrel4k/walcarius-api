@@ -1,0 +1,57 @@
+enum QuoteProjectSortBy {
+    ID
+    NAME
+    REFERENCE
+    CUSTOMER
+    CREATED_AT
+}
+
+type QuoteProject {
+    _id: ID
+    name: String!
+    reference: String!
+    customer: String!
+    quoteIds: [String]
+    quotes: [Quote]
+    displayQuotes: [DisplayQuote]
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
+}
+
+input InputQuoteProject {
+    name: String!
+    reference: String!
+    customer: String!
+}
+
+input UpdateQuoteProject {
+    name: String
+    reference: String
+    customer: String
+    updatedAt: Int
+}
+
+input SortQuoteProject {
+    sortBy: QuoteProjectSortBy
+    sortDirection: OrderByDirection
+}
+
+input FilterQuoteProject {
+    name: String
+    reference: String
+    customer: String
+    createdAt: Int
+}
+
+type Query {
+    quoteProjects(pagination: Pagination, sort: SortQuoteProject, search: String): [QuoteProject!]!
+    quoteProject(_id: String!): QuoteProject
+    isQuoteProjectDeletable(_id: String!): Boolean
+}
+
+type Mutation {
+    createQuoteProject(project: InputQuoteProject!): QuoteProject
+    updateQuoteProject(project: UpdateQuoteProject!, _id: String!): QuoteProject
+    deleteQuoteProject(_id: String!): Boolean
+}

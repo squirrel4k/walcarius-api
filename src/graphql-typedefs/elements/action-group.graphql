@@ -1,0 +1,13 @@
+type ActionGroup {
+    id: ID!
+    name: String!
+    icon: String!
+    actions: [Action!]!
+    parameters: [ElementNatureDefinition!]!
+    useClass: String!
+    availableMatters: [Matter!]!
+}
+
+type Query {
+    getActionGroupById(actionGroupId: ID!): ActionGroup
+}

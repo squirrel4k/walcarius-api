@@ -1,0 +1,59 @@
+type Amalgam {
+    id: ID
+    loss: Float!
+    isLocked: Boolean
+    isInStock: Boolean
+    stockPosition: String
+    amalgamGroupId: ID
+    amalgamGroup: AmalgamGroup
+    parts: [AmalgamPart!]!
+}
+
+input AmalgamInput {
+    id: ID
+    reference: String!
+    format: Float!
+    loss: Float!
+    isEn1090: Boolean!
+    isBlack: Boolean!
+    isBlasted: Boolean!
+    isPrimaryBlasted: Boolean!
+    isCut: Boolean!
+    isLocked: Boolean
+    icon: String
+    matterRef: String
+    isInStock: Boolean
+    stockPosition: String
+    isManual: Boolean
+    matterId: ID
+    elementId: ID
+    supplyCategoryId: ID!
+    parts: [AmalgamPartInput!]!
+}
+
+input AmalgamParam {
+    beams: CategoryParam!
+    tubes: CategoryParam!
+}
+
+input CategoryParam {
+    length: Int!
+    otherLengths: [Int!]
+    isAutoCut: Boolean!
+    cutThreshold: Int
+    maxLoss: Int
+}
+
+input AmalgamFilter {
+    priceRequestId: ID!
+}
+
+type AmalgamGenerationResult {
+    amalgams: [Amalgam!]!
+    barsetGeneration: BarsetGeneration
+}
+
+type Query {
+    generateAmalgams(priceRequestId: ID!, params: AmalgamParam, locked: [AmalgamInput!]): AmalgamGenerationResult
+    amalgams(filter: AmalgamFilter!): [Amalgam!]!
+}

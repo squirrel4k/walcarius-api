@@ -1,0 +1,18 @@
+--
+-- Table structure for table `admission`
+--
+
+
+
+DROP TABLE IF EXISTS `admission` ;
+CREATE TABLE `admission` (
+  `id` INT unsigned NOT NULL AUTO_INCREMENT,
+  `quantity` INT unsigned  NOT NULL,
+  `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `location` VARCHAR(255) NULL DEFAULT NULL,
+  `admitedBy` VARCHAR(50) NULL DEFAULT NULL,
+  `idElement` INT unsigned  NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_PURCHASE_ORDER_ELEMENT_ID_ELEMENT_idx` (`idElement`),
+  CONSTRAINT `FK_PURCHASE_ORDER_ELEMENT_ID_ELEMENT_ID_ELEMENT` FOREIGN KEY (`idElement`) REFERENCES `purchaseOrderElements` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

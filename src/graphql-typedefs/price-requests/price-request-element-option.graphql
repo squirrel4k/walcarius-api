@@ -1,0 +1,55 @@
+enum OptionType {
+    PROCESSING
+    CUT
+    OTHER
+}
+
+enum OptionUnit {
+    EURO
+    EURO_BY_UNIT
+    EURO_BY_TON
+    EURO_BY_METER
+    EURO_BY_SQUARE_METER
+}
+
+type PriceRequestElementOption {
+    id: ID!
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    unit: OptionUnit!
+    bestPrice: Float
+    priceRequestElementId: ID!
+    priceRequestElement: PriceRequestElement
+    supplierOfferElementOptions: [SupplierOfferElementOption!]!
+}
+
+input PriceRequestElementOptionFilter {
+    priceRequestElementId: ID
+}
+
+input PriceRequestElementOptionInput {
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    unit: OptionUnit!
+    priceRequestElementIds: [ID!]!
+}
+
+input PriceRequestElementOptionUpdate {
+    type: OptionType
+    denomination: String
+    quantity: Int
+    unit: OptionUnit
+}
+
+type Query {
+    priceRequestElementOption(id: ID!): PriceRequestElementOption
+    priceRequestElementOptions(filter: PriceRequestElementOptionFilter): [PriceRequestElementOption!]!
+}
+
+type Mutation {
+    createPriceRequestElementOptions(data: PriceRequestElementOptionInput!): [PriceRequestElementOption!]!
+    updatePriceRequestElementOption(id: ID!, data: PriceRequestElementOptionUpdate!): PriceRequestElementOption
+    deletePriceRequestElementOption(id: ID!): Boolean
+}

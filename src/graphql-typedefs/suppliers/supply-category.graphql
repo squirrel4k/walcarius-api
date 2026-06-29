@@ -1,0 +1,56 @@
+type SupplyCategory {
+    id: ID
+    name: String
+    parentSupplyCategoryId: ID
+    elementGroupId: ID
+    subCategories: [SupplyCategory!]
+    parentSupplyCategory: SupplyCategory
+    elementGroup: ElementGroup
+    fields: [Field!]
+    suppliers: [Supplier!]!
+}
+
+type Field {
+    id: ID!
+    name: String!
+    type: FieldType!
+    regex: String
+    min: Int
+    max: Int
+    nullable: Boolean!
+    redefine: Boolean!
+    unit: String
+}
+
+enum FieldType {
+    STRING
+    INT
+    FLOAT
+    BOOLEAN
+}
+
+type SelectedSupplyCategory {
+    id: ID
+    name: String
+    selected: Boolean
+    parentSupplyCategoryId: ID
+    elementGroupId: ID
+    subCategories: [SelectedSupplyCategory!]
+    elementGroup: ElementGroup
+}
+
+input SelectedSupplyCategoryInput {
+    id: ID!
+    selected: Boolean!
+    subCategories: [SelectedSupplyCategoryInput!]
+}
+
+type Query {
+    supplyCategories(parentSupplyCategoryId: ID): [SupplyCategory!]!
+    supplyCategory(id: ID!): SupplyCategory
+    supplyCategoriesBySupplier(supplierId: ID!): [SelectedSupplyCategory!]!
+}
+
+type Mutation {
+    setSupplyCategoriesOfSupplier(supplierId: ID!, data: [SelectedSupplyCategoryInput!]!): Boolean
+}

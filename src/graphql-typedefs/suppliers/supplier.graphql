@@ -1,0 +1,53 @@
+type Supplier {
+    id: ID!
+    code: String!
+    name: String!
+    mail: String
+    phone: String
+    remark: String
+    contacts: [SupplierContact!]
+    allSupplyCategories: [SupplyCategory!]!
+    parentSupplyCategories: [SupplyCategory!]!
+    matters: [Matter!]!
+}
+
+input SupplierInput {
+    code: String!
+    name: String!
+    mail: String
+    phone: String
+    remark: String
+}
+
+input SupplierUpdate {
+    code: String
+    name: String
+    mail: String
+    phone: String
+    remark: String
+}
+
+type SelectedMatter {
+    id: ID
+    name: String
+    selected: Boolean
+}
+
+
+input SelectedMattersInput {
+    id: ID!
+    selected: Boolean!
+}
+
+type Query {
+   suppliers(deleted: Boolean, pagination: Pagination, search: String): [Supplier!]!
+   supplier(id: ID!): Supplier
+   mattersBySupplier(supplierId: ID!): [SelectedMatter!]!
+}
+
+type Mutation {
+    createSupplier(data: SupplierInput!): Supplier
+    deleteSupplier(id: ID!): Boolean
+    updateSupplier(id: ID!, data: SupplierUpdate!): Supplier
+    setMattersOfSupplier(supplierId: ID!, data: [SelectedMattersInput!]!): Boolean
+}

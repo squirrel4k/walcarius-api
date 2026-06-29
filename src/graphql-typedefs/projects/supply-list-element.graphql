@@ -1,0 +1,75 @@
+type SupplyListElement {
+    id: ID!
+    reference: String
+    denomination: String
+    matterRef: String
+    quantity: Float!
+    weight: Float
+    format: String
+    isBlack: Boolean!
+    isBlasted: Boolean!
+    isPrimaryBlasted: Boolean!
+    length: Float
+    width: Float
+    thickness: Float
+    quantityUnit: String
+    basicQuantityUnit: String
+    remark: String
+    supplyListId: ID!
+    supplyCategoryId: ID
+    elementId: ID
+    matterId: ID
+    supplyList: SupplyList
+    supplyCategory: SupplyCategory
+    element: Element
+    matter: Matter
+}
+
+input SupplyListElementInput {
+    reference: String
+    denomination: String
+    matterRef: String
+    quantity: Float!
+    weight: Float
+    format: String
+    isBlack: Boolean
+    isBlasted: Boolean
+    isPrimaryBlasted: Boolean
+    length: Float
+    width: Float
+    thickness: Float
+    quantityUnit: String
+    basicQuantityUnit: String
+    remark: String
+    supplyCategoryId: ID
+    elementId: ID
+    matterId: ID
+}
+
+input SupplyListElementUpdate {
+    id: ID
+    reference: String
+    denomination: String
+    matterRef: String
+    quantity: Float
+    weight: Float
+    format: String
+    isBlack: Boolean
+    isBlasted: Boolean
+    isPrimaryBlasted: Boolean
+    length: Float
+    width: Float
+    thickness: Float
+    quantityUnit: String
+    basicQuantityUnit: String
+    remark: String
+    supplyCategoryId: ID
+    elementId: ID
+    matterId: ID
+}
+
+enum QuantityUnit {
+    UNIT
+    KG
+    TON
+}

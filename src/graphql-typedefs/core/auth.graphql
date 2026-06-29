@@ -1,0 +1,16 @@
+type AuthUser {
+    id: Int!
+    username: String!
+    isAdmin: Boolean!
+    token: String!
+}
+
+type Query {
+    authenticate(login: String!, password: String!): AuthUser
+    sendResetPasswordMail(email: String!): Boolean
+    ping: String
+}
+
+type Mutation {
+    resetPassword(password: String!): AuthUser
+}

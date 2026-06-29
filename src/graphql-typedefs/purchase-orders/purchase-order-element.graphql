@@ -1,0 +1,224 @@
+type PurchaseOrder {
+    id: ID!
+    reference: String!
+    status: PurchaseOrderStatus
+    isSent: Boolean!
+    sendingDate: Date
+    remark: String
+    internalRemark: String
+    projectId: ID
+    project: Project
+    supplierId: ID
+    supplier: Supplier
+    supplierContactId: ID
+    supplierContact: SupplierContact
+    priceRequestId: ID
+    priceRequest: PriceRequest
+    userId: ID
+    user: User
+    createdAt: Date!
+    deletedAt: Date
+    additionnalCosts: [PurchaseOrderAdditionnalCost!]!
+    elements: [PurchaseOrderElement!]!
+    totalPrice: Float
+    totalAdditionnalCosts: Float
+} 
+
+type PurchaseOrderElement {
+    id: ID!
+    quantity: Float!
+    denomination: String
+    isEn1090: Boolean!
+    isBlack: Boolean!
+    status: PurchaseOrderElementStatus
+    isBlasted: Boolean!
+    isPrimaryBlasted: Boolean!
+    format: String
+    weight: Float
+    matterRef: String
+    quantityUnit: String
+    thickness: Float
+    length: Float
+    width: Float
+    remark: String
+    deliveryDate: Date
+    realDeliveryDate: Date
+    price: Float
+    unit: ElementUnit
+    isPrinted: Boolean!
+    printedQuantity: Int!
+    purchaseOrderId: ID!
+    projectId: ID
+    purchaseOrder: PurchaseOrder
+    supplierOfferElementId: ID
+    supplierOfferElement: SupplierOfferElement
+    supplyCategoryId: ID
+    supplyCategory: SupplyCategory
+    options: [PurchaseOrderElementOption!]!
+    createdAt: Date!
+    qttOnqttTotal: String
+    qttRecept: Int
+    projectRef: String
+    supplierName: String
+}
+
+enum PurchaseOrderElementStatus {
+    ATTENTE,
+    ENCOURS,
+    RECEPTIONNE
+}
+
+enum ElementUnit {
+    EURO
+    EURO_BY_UNIT
+    EURO_BY_KG
+    EURO_BY_TON
+    EURO_BY_METER
+    EURO_BY_SQUARE_METER
+}
+
+input PurchaseOrderElementInput {
+    quantity: Float!
+    quantityUnit: String
+    denomination: String
+    remark: String
+    deliveryDate: Date
+    realDeliveryDate: Date
+    price: Float
+    unit: ElementUnit!
+    purchaseOrderId: ID!
+    projectRef: String
+    supplyCategoryId: ID
+    options: [PurchaseOrderElementOptionInput!]!
+    isEn1090: Boolean
+    isBlack: Boolean
+    isBlasted: Boolean
+    isPrimaryBlasted: Boolean
+    format: String
+    weight: Float
+    matterRef: String
+    thickness: Float
+    length: Float
+    width: Float
+    isPrinted: Boolean
+    printedQuantity: Int
+    supplierOfferElementId: ID
+    }
+
+input PurchaseOrderElementUpdate {
+    id: ID
+    quantity: Float
+    quantityUnit: String
+    denomination: String
+    remark: String
+    deliveryDate: Date
+    realDeliveryDate: Date
+    price: Float
+    unit: ElementUnit
+    options: [PurchaseOrderElementOptionInpdate!]!
+    deletedOptionIds: [ID!]!
+}
+
+input PurchaseOrderElementUpdateRemark {
+    remark: String
+}
+
+input PurchaseOrderElementUpdateFormat {
+    format: String
+}
+
+input PurchaseOrderElementUpdateDenomination {
+    denomination: String
+}
+
+input PurchaseOrderElementUpdateQuantity {
+    quantity: Float
+}
+
+input PurchaseOrderElementUpdateQuantityUnit {
+    quantityUnit: String
+}
+
+input PurchaseOrderElementUpdateMatiere {
+    matterRef: String
+}
+
+input PurchaseOrderElementUpdateWeight {
+    weight: Float
+}
+
+input PurchaseOrderElementUpdateWidth {
+    width: Float
+}
+
+input PurchaseOrderElementUpdateLength {
+    length: Float
+}
+
+input PurchaseOrderElementUpdateThickness {
+    thickness: Float
+}
+
+input PurchaseOrderElementUpdatePrice {
+    price: Float
+    unit: ElementUnit
+}
+
+input PurchaseOrderElementUpdateDeliveryDate {
+    deliveryDate: Date
+}
+
+input PurchaseOrderElementUpdateEn1090 {
+    isEn1090: Boolean!
+}
+
+input PurchaseOrderElementUpdateOption {
+    option: String!
+}
+
+input FilterPurchaseOrderElement{
+    category:[String]
+    reference: String
+    project: String
+    bdc: String
+    dateFrom: Date 
+    dateTo: Date
+    denom:String
+    format:String
+    poids:Float
+    long:Float
+    larg:Float
+    remarque:String
+    status:String
+    thickness:String
+}
+
+input PurchaseOrderElementFilter {
+    purchaseOrderId: ID!
+}
+
+type Query {
+    purchaseOrderElement(id: ID!): PurchaseOrderElement
+    purchaseOrderElements(filter: PurchaseOrderElementFilter!): [PurchaseOrderElement!]!
+    filterPurchaseOrderElement(search: String,filter:FilterPurchaseOrderElement,pagination: Pagination): [PurchaseOrderElement]!
+}
+
+type Mutation {
+    createPurchaseOrderElement(data: PurchaseOrderElementInput!): PurchaseOrderElement
+    updatePurchaseOrderElement(id: ID!, data: PurchaseOrderElementUpdate!): PurchaseOrderElement
+    updatePurchaseOrderElementRemark(id: ID!, data: PurchaseOrderElementUpdateRemark): PurchaseOrderElement
+    updatePurchaseOrderElementFormat(id: ID!, data: PurchaseOrderElementUpdateFormat): PurchaseOrderElement
+    updatePurchaseOrderElementDenomination(id: ID!, data: PurchaseOrderElementUpdateDenomination): PurchaseOrderElement
+    updatePurchaseOrderElementQuantity(id: ID!, data: PurchaseOrderElementUpdateQuantity): PurchaseOrderElement
+    updatePurchaseOrderElementMatiere(id: ID!, data: PurchaseOrderElementUpdateMatiere): PurchaseOrderElement
+    updatePurchaseOrderElementWeight(id: ID!, data: PurchaseOrderElementUpdateWeight): PurchaseOrderElement
+    updatePurchaseOrderElementWidth(id: ID!, data: PurchaseOrderElementUpdateWidth): PurchaseOrderElement
+    updatePurchaseOrderElementLength(id: ID!, data: PurchaseOrderElementUpdateLength): PurchaseOrderElement
+    updatePurchaseOrderElementThickness(id: ID!, data: PurchaseOrderElementUpdateThickness): PurchaseOrderElement
+    updatePurchaseOrderElementPrice(id: ID!, data: PurchaseOrderElementUpdatePrice): PurchaseOrderElement
+    updatePurchaseOrderElementDeliveryDate(id: ID!, data: PurchaseOrderElementUpdateDeliveryDate): PurchaseOrderElement
+    updatePurchaseOrderElementQuantityUnit(id: ID!, data: PurchaseOrderElementUpdateQuantityUnit): PurchaseOrderElement
+    updatePurchaseOrderElementEn1090(id: ID!, data: PurchaseOrderElementUpdateEn1090): PurchaseOrderElement
+    updatePurchaseOrderElementOption(id: ID!, data: PurchaseOrderElementUpdateOption): PurchaseOrderElement
+    deletePurchaseOrderElement(id: ID!): Boolean
+}

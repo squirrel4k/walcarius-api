@@ -1,0 +1,11 @@
+type Matter {
+    id: ID
+    name: String!
+    en1090Name: String
+    pricePerKg: Float!
+    kgByLiter: Float
+}
+
+type Query {
+    availableMatters(forCustom: Boolean): [Matter!]
+}

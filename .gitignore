@@ -1,0 +1,14 @@
+node_modules/
+.vscode/
+test/
+logs/
+dist/
+package-lock.json
+.env
+uploads/
+tmp/
+.idea/
+documentation/
+scratch/
+filesPdf/
+docker-compose.yml

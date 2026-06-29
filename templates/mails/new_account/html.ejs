@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>New account</title>
+    </head>
+    <body>
+        <h3>Hi <%= user.firstName && user.lastName ? user.firstName + " " + user.lastName : user.login %>,</h3>
+        <p>
+            Your account has been created successfully.
+        </p>
+        <p>
+            Your login is : <%= user.login ? user.login : "" %>
+        </p>
+        <p>
+            <a href="<%= urlReset %>">Click here to set your password</a>.
+        </p>
+        <p>
+            This link is valid for 2 days. After it expires, you can <a href="<%= urlNew %>">click here to request a new one</a>.
+        </p>
+        <p>
+            This mail is automatic, please do not answer to it.
+        </p>
+    </body>
+</html>

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8">
+	<title>Purchase Order</title>
+	<link rel="stylesheet" href="http:<%= serverUrl %>css/price-requests.css">
+	<link rel="stylesheet" href="http:<%= serverUrl %>css/purchase-order.css">
+</head>
+
+<body>
+	<div class="container">
+		<div class="logo">
+			<img src="http:<%= serverUrl %>img/walcarius.png" alt="">
+		</div>
+		<hr>
+		<div class="info">
+			<div class="info-walca">
+				<p>Rue des Garennes 8</p>
+				<p>B-7700 Mouscron</p>
+				<p>Email : info@walcarius.be</p>
+				<p>Tel : +32 (0)56 48 15 15</p>
+				<p>Fax : +32 (0)56 48 15 10</p><br>
+
+				<p>T.V.A. BE 426.588.578</p>
+				<p>R.C.T 64.744</p>
+				<p>Enr. entr. 426.588.578.082311</p>
+			</div>
+			<div class="info-customer">
+				<div class="provider-case">
+					<%= purchaseOrder && purchaseOrder.supplier ? purchaseOrder.supplier.name : "" %></div>
+				<div class="provider-case">
+					<span>
+                        <%= translate("pdf.purchase_order.contact", lang) %>
+					</span>
+					<hr>
+					<span class="provider-case_content">
+						<% if (purchaseOrder && purchaseOrder.supplierContact) { %>
+							<%= purchaseOrder.supplierContact.firstname %> <%= purchaseOrder.supplierContact.lastname %>
+						<% } %>
+					</span>
+					<span class="provider-case_content">
+						<%= purchaseOrder.supplierContact && purchaseOrder.supplierContact.phone ?
+                   				purchaseOrder.supplierContact.phone :
+								purchaseOrder.supplier ? purchaseOrder.supplier.phone : "" %>
+					</span>
+					<span class="provider-case_content">
+						<%= purchaseOrder.supplierContact && purchaseOrder.supplierContact.mail ?
+								purchaseOrder.supplierContact.mail :
+								purchaseOrder.supplier ? purchaseOrder.supplier.mail : "" %>
+					</span>
+				</div>
+			</div>
+		</div>
+		<h4>
+            <%= translate("pdf.purchase_order.datum_label", lang) %>  <%= displayDate(new Date(), "DD/MM/YYYY") %>
+		</h4>
+		<div class="title">
+			<h1 class="title_content"><%= translate("pdf.purchase_order.name", lang) %> <%= purchaseOrder ? purchaseOrder.reference : "" %> </h1>
+			<span>
+				<% if (purchaseOrder && purchaseOrder.priceRequest && purchaseOrder.priceRequest.supplierOffers && purchaseOrder.priceRequest.supplierOffers.length > 0) { %>
+					<%= translate("pdf.purchase_order.from_price_request", lang) %> <%= purchaseOrder.priceRequest.reference %>
+					<% if (!!purchaseOrder.priceRequest.supplierOffers[0].supplierReference) { %>
+						/ <%= translate("pdf.purchase_order.from_supplier_offer", lang) %> <%= purchaseOrder.priceRequest.supplierOffers[0].supplierReference %>
+					<% } %>
+				<% } %>
+			</span>
+		</div>
+		<div class="order">
+			<table>
+				<thead>
+					<tr>
+						<th class="po_size_ref"><%= translate("pdf.purchase_order.project", lang) %></th>
+						<th class="po_size_art" colspan="3"><%= translate("pdf.purchase_order.article", lang) %></th>
+						<th class="po_size_en1090"><%= translate("pdf.purchase_order.en1090", lang) %></th>
+						<th class="po_size_date"><%= translate("pdf.purchase_order.delivery_date", lang) %></th>
+						<th class="po_size_qua"><%= translate("pdf.purchase_order.quantity", lang) %></th>
+						<th class="po_size_pri"><%= translate("pdf.purchase_order.price", lang) %></th>
+						<th class="po_size_uni"><%= translate("pdf.purchase_order.unit", lang) %></th>
+					</tr>
+				</thead>
+				<tbody>
+					<% purchaseOrder.elements.forEach(function(element) { %>
+						<tr>
+							<td class="po_size_ref" rowspan="<%= 1 + element.options.length + (!!element.remark ? 1 : 0) %>">
+								<!-- Reference -->
+								<% if (purchaseOrder.project) { %>
+									<%= purchaseOrder.project.reference %>
+								<% } else { %>
+									<%= element.projectReferences.join(", ") %>
+								<% } %>
+							</td>
+
+							<% if (getLineType(unitConfig, element) === PdfElementLineType.AMALGAMS) { %>
+								<td class="po_size_art__ref">
+									<!-- Article -->
+									<%= element.denomination ? element.denomination : "" %>
+								</td>
+								<td class="po_size_art__matter">
+									<!-- Matter -->
+									<% if (element.matterRef) { %>
+										<%= element.matterRef ? element.matterRef : "" %>
+									<% } %>
+								</td>
+								<td class="po_size_art__processing">
+									<!-- Black -->
+									<% if (element.isBlack) { %>
+
+									<!-- Blasted -->
+									<% } else if (element.isBlasted) { %>
+										<%= translate("pdf.purchase_order.blasted", lang) %>
+									<!-- Primary Blasted -->
+									<% } else if (element.isPrimaryBlasted) { %>
+										<%= translate("pdf.purchase_order.primary_blasted", lang) %>
+									<% } %>
+								</td>
+							<% } else if (getLineType(unitConfig, element) === PdfElementLineType.PLATES) { %>
+								<td class="po_size_art__plate" colspan="2">
+									<!-- Plate -->
+									<%= translate("pdf.purchase_order.plate", lang) %> 
+									<%= +element.thickness %> x <%= +element.length %> x <%= +element.width %>
+								</td>
+								<td class="po_size_art__matter">
+									<!-- Matter -->
+									<%= element.matterRef %>
+								</td>
+							<% } else { %>
+								<td class="po_size_art" colspan="3">
+									<!-- Article -->
+									<%= element.denomination ? element.denomination : "" %>
+								</td>
+							<% } %>
+							<td class="po_size_en1090">
+								<%= element.isEn1090 ? "X" : "" %>
+							</td>
+							<td class="po_size_date">
+								<%= element.deliveryDate ? displayDate(element.deliveryDate, "DD/MM/YYYY") : "" %>
+							</td>
+							<td class="po_size_qua">
+								<!-- Quantity -->
+								<%= +element.quantity %>
+								<!-- Format -->
+								<% if (element.format) { %>
+									x <%= formatLength(element.format) %>
+								<% } %>
+								<!-- Quantity unit -->
+								<% if (getLineType(unitConfig, element) !== PdfElementLineType.AMALGAMS) { %>
+									<%= formatQuantityUnit(element.quantityUnit, lang); %>
+								<% } %>
+							</td>
+							<td class="po_size_price">
+								<!-- Price -->
+								<%= element.price ? element.price : "" %>
+							</td>
+							<td class="po_size_uni">
+								<!-- Unit -->
+								<%= formatUnit(unitConfig, element) %>
+							</td>
+						</tr>
+						<% if (element.options && element.options.length > 0) { %>
+							<% element.options.forEach(function (option) { %>
+								<tr>
+									<td colspan="5">
+										<strong>
+										<% if (option.type == "PROCESSING") { %>
+											<%= translate("pdf.purchase_order.processing", lang) %> <%= option.denomination ? " - " + option.denomination : "" %>
+										<% } else if (option.type == "CUT") { %>
+											<%= translate("pdf.purchase_order.cut", lang) %>
+										<% } else { %>
+											<%= translate("pdf.purchase_order.other", lang) %> <%= option.denomination ? " - " + option.denomination : "" %>
+										<% } %>
+										</strong>
+									</td>
+									<td class="po_size_qua">
+										<%= option.quantity ? option.quantity : 1 %>
+									</td>
+									<td class="po_size_price">
+										<%= option.price ? option.price : "" %>
+									</td>
+									<td class="po_size_uni">
+										<% if (option.unit == "EURO") { %>
+											€
+										<% } else if (option.unit == "EURO_BY_UNIT") { %>
+											€ / u
+										<% } else if (option.unit == "EURO_BY_TON") { %>
+											€ / T
+										<% } else if (option.unit == "EURO_BY_METER") { %>
+											€ / m
+										<% } else if (option.unit == "EURO_BY_SQUARE_METER") { %>
+											€ / m²
+										<% } %>
+									</td>
+								</tr>
+							<% }); %>
+						<% } %>
+						<% if (!!element.remark) { %>
+							<tr>
+								<td colspan="8"><strong><%= translate("pdf.purchase_order.remark", lang)%> :</strong> <%= element.remark %></td>
+							</tr>
+						<% } %>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+		<% if (purchaseOrder && purchaseOrder.additionnalCosts && purchaseOrder.additionnalCosts.length > 0) { %>
+		    <h4><%= translate("pdf.purchase_order.additionnal_costs", lang) %></h4>
+			<table>
+				<thead>
+					<tr>
+						<th class="size_ac_qty"><%= translate("pdf.purchase_order.quantity", lang) %></th>
+						<th class="size_ac_typ"><%= translate("pdf.purchase_order.type", lang) %></th>
+						<th class="size_ac_den"><%= translate("pdf.purchase_order.denomination", lang) %></th>
+						<th class="size_ac_pri"><%= translate("pdf.purchase_order.price", lang) %></th>
+						<th class="size_ac_uni"><%= translate("pdf.purchase_order.unit", lang) %></th>
+					</tr>
+				</thead>
+				<tbody>
+					<% purchaseOrder.additionnalCosts.forEach(function(cost) { %>
+						<tr>
+							<td class="size_ac_qty">
+								<!-- Quantity -->
+								<%= cost.quantity ? cost.quantity : 1 %>
+							</td>
+							<td class="size_ac_typ">
+								<!-- Type -->
+								<% if (cost.type == "TRANSPORT_FEE") { %>
+									<%= translate("pdf.purchase_order.transport_fee", lang) %>
+								<% } else if (cost.type == "PACKAGING_FEE") { %>
+									<%= translate("pdf.purchase_order.packaging_fee", lang) %>
+								<% } else if (cost.type == "CERTIFICATE_FEE") { %>
+									<%= translate("pdf.purchase_order.certificate_fee", lang) %>
+								<% } else if (cost.type == "OTHER") { %>
+									<%= translate("pdf.purchase_order.other", lang) %>
+								<% } %>
+							</td>
+							<td class="size_ac_den">
+								<!-- Denomination -->
+								<%= cost.denomination ? cost.denomination : "" %>
+							</td>
+							<td class="size_ac_pri">
+								<!-- Price -->
+								<%= cost.price ? cost.price : "" %>
+							</td>
+							<td class="size_ac_uni">
+								<!-- Unit -->
+								<% if (cost.unit == "EURO") { %>
+									€
+								<% } else if (cost.unit == "EURO_BY_UNIT") { %>
+									€/u
+								<% } %>
+							</td>
+						</tr>
+					<% }) %>
+				</tbody>
+			</table>
+		<% } %>
+		<% if (purchaseOrder.remark) { %>
+			<div class="remarks">
+				<h4><%= translate("pdf.purchase_order.remark", lang) %></h4>
+				<p><%= purchaseOrder.remark %><p>
+			</div>
+		<% } %>
+		<div class="remarks">
+			<h4><%= translate("pdf.purchase_order.order_conditions_title", lang) %></h4>
+			<p class="order_conditions_content">
+				<% translate("pdf.purchase_order.order_conditions_content", lang).split("\n").forEach(function(line) { %>
+					<%= line %><br/>
+				<% }) %>
+        <% translate("pdf.purchase_order.order_conditions_content_2", lang).split("\n").forEach(function(line) { %>
+					<%= line %>
+				<% }) %>
+			</p>
+		</div>
+	</div>
+</body>
+</html>

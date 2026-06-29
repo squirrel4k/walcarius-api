@@ -1,0 +1,32 @@
+type BarsetGeneration {
+    id: ID!
+    beamLength: Int!
+    beamOtherLengths: [Int!]
+    beamIsAutoCut: Boolean!
+    beamCutThreshold: Int
+    beamMaxLoss: Int
+    tubeLength: Int!
+    tubeOtherLengths: [Int!]
+    tubeIsAutoCut: Boolean!
+    tubeCutThreshold: Int
+    tubeMaxLoss: Int
+    generationDuration: Int
+    partsTotalLength: Int
+    amalgamsTotalLength: Int
+    totalLoss: Int
+    lossPercent: Float
+    partsQuantity: Int
+    amalgamsQuantity: Int
+    priceRequestId: ID!
+    priceRequest: PriceRequest
+}
+
+input BarsetGenerationUpdate {
+    id: ID!
+    params: AmalgamParam!
+    generationDuration: Int
+    partsTotalLength: Int
+    amalgamsTotalLength: Int
+    partsQuantity: Int
+    amalgamsQuantity: Int
+}

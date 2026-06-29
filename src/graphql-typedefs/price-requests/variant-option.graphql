@@ -1,0 +1,52 @@
+type VariantOption {
+    id: ID!
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    price: Float!
+    unit: OptionUnit!
+    variantId: ID!
+    variant: Variant
+}
+
+input VariantOptionFilter {
+    variantId: ID
+}
+
+input VariantOptionInput {
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    price: Float!
+    unit: OptionUnit!
+    variantId: ID!
+}
+
+input VariantOptionUpdate {
+    type: OptionType
+    denomination: String
+    quantity: Int
+    price: Float
+    unit: OptionUnit
+}
+
+input VariantOptionInpdate {
+    id: ID
+    type: OptionType
+    denomination: String
+    quantity: Int
+    price: Float
+    unit: OptionUnit
+    variantId: ID
+}
+
+type Query {
+    variantOption(id: ID!): VariantOption
+    variantOptions(filter: VariantOptionFilter): [VariantOption!]!
+}
+
+type Mutation {
+    createVariantOption(data: VariantOptionInput!): VariantOption
+    updateVariantOption(id: ID!, data: VariantOptionUpdate!): VariantOption
+    deleteVariantOption(id: ID!): Boolean
+}

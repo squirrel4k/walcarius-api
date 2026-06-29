@@ -1,0 +1,35 @@
+type PurchaseOrderAdditionnalCost {
+    id: ID!
+    type: AdditionnalCostType!
+    denomination: String
+    quantity: Int!
+    price: Float
+    unit: AdditionnalCostUnit!
+    purchaseOrderId: ID!
+    purchaseOrder: PurchaseOrder
+}
+
+input PurchaseOrderAdditionnalCostInput {
+    type: AdditionnalCostType!
+    denomination: String
+    quantity: Int!
+    price: Float
+    unit: AdditionnalCostUnit!
+    purchaseOrderId: ID!
+}
+
+input PurchaseOrderAdditionnalCostUpdate {
+    id: ID
+    type: AdditionnalCostType
+    denomination: String
+    quantity: Int
+    price: Float
+    unit: AdditionnalCostUnit
+    purchaseOrderId: ID
+}
+
+type Mutation {
+    createPurchaseOrderAdditionnalCost(data: PurchaseOrderAdditionnalCostInput!): PurchaseOrderAdditionnalCost
+    updatePurchaseOrderAdditionnalCost(id: ID!, data: PurchaseOrderAdditionnalCostUpdate!): PurchaseOrderAdditionnalCost
+    deletePurchaseOrderAdditionnalCost(id: ID!): Boolean
+}

@@ -1,0 +1,1 @@
+ALTER TABLE permission ADD readPrice BOOL DEFAULT 0 NOT NULL;

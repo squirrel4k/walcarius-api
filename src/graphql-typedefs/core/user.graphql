@@ -1,0 +1,60 @@
+type Query {
+    getUser(id: Int!): User!
+    getUsers(search: String, sort: UserSort, pagination: Pagination): [User!]!
+}
+
+type Mutation{
+    updateUser(user: UpdateUser!, id: Int!): User
+    createUser(data: UserInput!): User
+    deleteUser(id: ID!): Boolean!
+}
+
+type User {
+    id: Int
+    username: String
+    password: String
+    firstname: String
+    lastname: String
+    userGroup: String
+    isAdmin: Boolean
+    resetToken: String
+    deletedAt: Date
+}
+
+
+enum UserStatus {
+    CREATED,
+    SENT,
+    CANCELLED
+}
+
+enum UserSortBy {
+    ID 
+    USERGROUP
+    FIRSTNAME
+    LASTNAME
+    USERNAME
+    EMAIL
+}
+
+input UserSort {
+    sortBy: UserSortBy!
+    sortDirection: OrderByDirection!
+}
+
+input UpdateUser {
+    username: String
+    firstname: String
+    lastname: String
+    userGroup: String
+    isAdmin: Boolean
+}
+
+input UserInput {
+    username: String
+    password: String
+    firstname: String
+    lastname: String
+    userGroup: String
+    isAdmin: Boolean
+}

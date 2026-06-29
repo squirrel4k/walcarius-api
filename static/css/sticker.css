@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.base_sticker {
+    font-size: 0.75rem;
+}
+
+.variant_sticker {
+    font-size: 0.60rem;
+}
+
+.sticker-line {
+    text-align: center;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0.35rem;
+}
+
+.sticker-line:first-of-type {
+    margin-top: 0.7rem;
+}
+
+.sticker-line:last-of-type {
+    margin-bottom: 0;
+}

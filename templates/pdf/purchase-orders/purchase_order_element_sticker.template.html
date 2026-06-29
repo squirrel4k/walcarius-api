@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sticker</title>
+
+    <link rel="stylesheet" href="http:<%= serverUrl %>css/sticker.css">
+</head>
+<body>
+<% data.forEach(function(stickerData, index) { %>
+<% for (let i = 0; i < stickerData.quantity; i++) { %>
+    <% if(index < data.length - 1 || (stickerData.quantity > 1 && i < stickerData.quantity - 1)) {%>
+        <div class="<%= stickerData.isVariant ? 'variant_sticker' : 'base_sticker' %>" style="page-break-after:always;">
+    <% } else { %>
+        <div class="<%= stickerData.isVariant ? 'variant_sticker' : 'base_sticker' %>">
+        <% } %>
+        <p class="sticker-line">
+            <%= stickerData.purchaseOrderReference ? stickerData.purchaseOrderReference : "" %>
+            <%= stickerData.supplier && stickerData.supplier ? stickerData.supplier : "" %>
+        </p>
+        <p class="sticker-line">
+            Liv <%= stickerData.deliveryDate ? displayDate(stickerData.deliveryDate, "DD/MM/YYYY") : "__/__/____" %>
+        </p>
+        <p class="sticker-line">
+            <%= stickerData.matterRef ? stickerData.matterRef + " - " : "" %>
+            <% if (getLineType(unitConfig, stickerData) === PdfElementLineType.AMALGAMS) { %>
+            <%= stickerData.elementReference ? stickerData.elementReference : "" %>
+            <%= stickerData.format ? " - " + stickerData.format + "mm" : "" %>
+            <% } else if (getLineType(unitConfig, stickerData) === PdfElementLineType.PLATES) { %>
+            <%= +stickerData.thickness %>x<%= +stickerData.length %>x<%= +stickerData.width %>
+            <% } else { %>
+            <%= stickerData.elementReference %>
+            <% } %>
+        </p>
+        <p class="sticker-line">
+            <% if (getLineType(unitConfig, stickerData) === PdfElementLineType.AMALGAMS) { %>
+            <% if(stickerData.isBlack) { %>
+            Noir
+            <% } else if (stickerData.isBlasted) { %>
+            Grenaillé
+            <% } else { %>
+            Grenaillé + primaire
+            <% } %>
+            <%= stickerData.weight ? " - " + +stickerData.weight + " Kg" : "" %>
+            <% } else { %>
+            <%= stickerData.weight ? +stickerData.weight + " Kg" : "" %>
+            <% } %>
+        </p>
+        <% if (stickerData.isVariant) { %>
+        <p class="sticker-line"><i>
+            ( A la place de :
+            <%= stickerData.og_matterRef ? stickerData.og_matterRef + " - " : "" %>
+            <% if (getLineType(unitConfig, stickerData) === PdfElementLineType.AMALGAMS) { %>
+            <%= stickerData.og_reference ? stickerData.og_reference : "" %>
+            <%= stickerData.og_format ? " - " + stickerData.og_format + "mm" : "" %>
+            <% } else if (getLineType(unitConfig, stickerData) === PdfElementLineType.PLATES) { %>
+            <%= +stickerData.og_thickness %>x<%= +stickerData.og_length %>x<%= +stickerData.og_width %>
+            <% } else { %>
+            <%= stickerData.og_reference %>
+            <% } %>
+        </i></p>
+        <p class="sticker-line"><i>
+            <% if (getLineType(unitConfig, stickerData) === PdfElementLineType.AMALGAMS) { %>
+            <% if(stickerData.og_isBlack) { %>
+            Noir
+            <% } else if (stickerData.og_isBlasted) { %>
+            Grenaillé
+            <% } else { %>
+            Grenaillé + primaire
+            <% } %>
+            <%= stickerData.og_weight ? " - " + +stickerData.og_weight + " Kg" : "" %>
+            <% } else { %>
+            <%= stickerData.og_weight ? +stickerData.og_weight + " Kg" : "" %>
+            <% } %>
+            )
+        </i></p>
+        <% } %>
+        <% if (stickerData.projectReferences && stickerData.projectReferences.length > 0) { %>
+        <p class="sticker-line">
+            <%= stickerData.projectReferences.join(", ") %>
+        </p>
+        <% } %>
+    </div>
+    <% } %>
+<% }) %>
+</body>
+</html>

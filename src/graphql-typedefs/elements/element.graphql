@@ -1,0 +1,34 @@
+type Element {
+    id: ID!
+    name: String!
+    elementGroupId: ID!
+    elementGroup: ElementGroup
+    matterId: ID!
+    matter: Matter
+    natureValues: JSON!
+    isOrigin: Boolean!
+}
+
+input InputElement {
+    name: String!
+    elementGroupId: ID!
+    matterId: ID!
+    natureValues: JSON!
+}
+
+input UpdateElement {
+    name: String
+    matterId: ID
+    natureValues: JSON
+}
+
+type Query {
+    searchElement(elementGroupId: ID, matterId: ID, search: String!): [Element!]
+    searchPlateThickness(matterId: ID!, search: String!): [Float!]
+}
+
+type Mutation {
+    addElement(element: InputElement!): Element
+    updateElement(id: ID!, element: UpdateElement!): Element
+    deleteElement(id: ID!): Boolean
+}

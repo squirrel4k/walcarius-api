@@ -1,0 +1,175 @@
+enum QuoteSortBy {
+    ID
+    NAME
+    NUMBER
+    REFERENCE
+    IS_EN_1090
+    CREATED_AT
+    UPDATED_AT
+}
+
+enum QuoteStatusEnum {
+    CREATED
+    VALIDATED
+    SENT
+}
+
+enum AdditionalComputingType {
+    OPERATION
+    ASSEMBLAGE
+}
+
+type Quote {
+    _id: ID
+    name: String
+    number: String!
+    reference: String
+    isEn1090: Boolean!
+    projectId: String
+    status: QuoteStatusEnum
+    needSandblasting: Boolean
+    needMetallization: Boolean
+    needLacquering: Boolean
+    needPainting: Boolean
+    needGalvanization: Boolean
+    remarks: String
+    totalPrice: Float
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
+    project: QuoteProject
+    elements: [QuoteElement]
+}
+
+type DisplayQuote {
+    _id: ID
+    name: String
+    number: String!
+    reference: String
+    isEn1090: Boolean!
+    projectId: String
+}
+
+input InputQuote {
+    name: String
+    number: String!
+    reference: String
+    isEn1090: Boolean!
+    projectId: String
+    status: QuoteStatusEnum
+    needSandblasting: Boolean
+    needMetallization: Boolean
+    needLacquering: Boolean
+    needPainting: Boolean
+    needGalvanization: Boolean
+    remarks: String
+    totalPrice: Float
+    createdAt: Int
+    elements: [InputQuoteElement]
+}
+
+input UpdateQuote {
+    _id: String
+    name: String
+    number: String
+    reference: String
+    isEn1090: Boolean
+    needSandblasting: Boolean
+    needMetallization: Boolean
+    needLacquering: Boolean
+    needPainting: Boolean
+    needGalvanization: Boolean
+    remarks: String
+    projectId: String
+    updatedAt: Int
+    totalPrice: Float
+    elements: [InputQuoteElement]
+}
+
+input SortQuote {
+    sortBy: QuoteSortBy
+    sortDirection: OrderByDirection
+}
+
+input FilterQuote {
+    name: String
+    number: String
+    reference: String
+    isEn1090: Boolean
+    createdAt: Int
+}
+
+type QuoteElement {
+    isVisible: Boolean!
+    quantity: Int!
+    unitPrice: Float!
+    customCost: Float
+    customName: String
+    additionalCost: Float
+    unitaryAdditionalCost: Float
+    globalAdditionalCost: Float
+    remarks: String
+    useClass: String!
+    content: JSON
+    children: [QuoteElement]
+    additionalComputings: [AdditionalComputing]
+}
+
+input InputQuoteElement {
+    isVisible: Boolean!
+    quantity: Int!
+    unitPrice: Float!
+    customCost: Float
+    customName: String
+    additionalCost: Float
+    unitaryAdditionalCost: Float
+    globalAdditionalCost: Float
+    remarks: String
+    useClass: String!
+    content: JSON
+    children: [InputQuoteElement]
+    additionalComputings: [InputAdditionalComputing]
+}
+
+type AdditionalComputing {
+    name: String!
+    unitPrice: Float!
+    customCost: Float
+    customName: String
+    additionalCost: Float
+    unitaryAdditionalCost: Float
+    globalAdditionalCost: Float
+    type: AdditionalComputingType
+    useClass: String!
+    properties: JSON
+    remarks: String
+}
+
+input InputAdditionalComputing {
+    name: String!
+    unitPrice: Float!
+    customCost: Float
+    customName: String
+    additionalCost: Float
+    unitaryAdditionalCost: Float
+    globalAdditionalCost: Float
+    type: AdditionalComputingType
+    useClass: String!
+    properties: JSON
+    remarks: String
+}
+
+type Query {
+    getQuoteNumber: String
+    quotes(pagination: Pagination, sort: SortQuote, search: String): [Quote!]!
+    displayQuotes(pagination: Pagination, sort: SortQuote, search: String): [DisplayQuote!]!
+    quote(_id: String): Quote
+}
+
+type Mutation {
+    freeQuoteNumber: Boolean
+    createQuote(quote: InputQuote!): Quote
+    updateQuote(quote: UpdateQuote!, _id: String!): Quote
+    deleteQuote(_id: String!): Boolean
+    duplicateQuote(_id: String!): Quote
+}

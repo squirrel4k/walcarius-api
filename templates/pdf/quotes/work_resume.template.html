@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Quote</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link href="http:<%= serverUrl %>css/work_resume.css" rel="stylesheet">
+</head>
+
+<body>
+    <div>
+        <div>
+            <h1>Résumé du devis <%= quote.number %></h1>
+            <div>
+                <table>
+                    <tr>
+                        <td>Nom :</td><td><%= quote.name %></td>
+                    </tr>
+                    <tr>
+                        <td>Client :</td><td><%= quote.project ? quote.project.customer : "" %></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <table>
+            <% Object.keys(data).forEach(function(key) { %>
+                <% if(data[key] > 0) { %>
+                    <tr>
+                        <td><%= translate(key) %></td>
+                        <td><%= data[key].toFixed(3) %> €</td>
+                    </tr>
+                <% } %>
+            <% }); %>  
+        </table>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+type PurchaseOrderElementOption {
+    id: ID!
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    price: Float
+    unit: OptionUnit!
+    purchaseOrderElementId: ID!
+    purchaseOrderElement: PurchaseOrderElement
+}
+
+input PurchaseOrderElementOptionInput {
+    type: OptionType!
+    denomination: String
+    quantity: Int!
+    price: Float
+    unit: OptionUnit!
+}
+
+input PurchaseOrderElementOptionInpdate {
+    id: ID
+    type: OptionType
+    denomination: String
+    quantity: Int
+    price: Float
+    unit: OptionUnit
+}

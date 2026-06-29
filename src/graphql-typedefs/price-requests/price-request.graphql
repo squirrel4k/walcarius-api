@@ -1,0 +1,74 @@
+type PriceRequest {
+    id: ID!
+    reference: String!
+    remark: String
+    internalRemark: String
+    status: PriceRequestStatus
+    isValidated: Boolean!
+    isDone: Boolean!
+    createdAt: Date!
+    userId: ID
+    barsetGeneration: BarsetGeneration
+    supplyLists: [SupplyList!]!
+    elements: [PriceRequestElement!]!
+    supplierOffers: [SupplierOffer!]!
+    user: User
+    additionnalCosts: [PriceRequestAdditionnalCost!]!
+    linkedProjects: [Project!]!
+}
+
+input PriceRequestInput {
+    reference: String!
+    remark: String
+    internalRemark: String
+    status: PriceRequestStatus
+    supplyListIds: [ID!]
+}
+
+input PriceRequestUpdate {
+    remark: String
+    internalRemark: String
+    status: PriceRequestStatus
+    isValidated: Boolean
+    isDone: Boolean
+}
+
+input PriceRequestFilter {
+    deleted: Boolean
+    search: String
+}
+
+enum PriceRequestSortBy {
+    ID
+    REFERENCE
+    CREATED_AT
+}
+
+enum PriceRequestStatus {
+    CREATED
+    SENT
+    ORDERED
+    PARTIALLY
+}
+
+input PriceRequestSort {
+    sortBy: PriceRequestSortBy!
+    sortDirection: OrderByDirection!
+}
+
+type Query {
+    priceRequests(filter: PriceRequestFilter, sort: PriceRequestSort, pagination: Pagination): [PriceRequest!]!
+    priceRequest(id: ID!): PriceRequest
+    getPriceRequestReference: String
+}
+
+type Mutation {
+    createPriceRequest(data: PriceRequestInput!): PriceRequest
+    createPriceRequestBySupplyList(supplyListId: ID!): PriceRequest
+    deletePriceRequest(id: ID!): Boolean
+    updatePriceRequest(id: ID!, data: PriceRequestUpdate!): PriceRequest
+    freePriceRequestReference: Boolean
+    assignSupplyListsToPriceRequest(priceRequestId: ID!, supplyListIds: [ID!]!): Boolean
+    freeSupplyListFromPriceRequest(supplyListId: ID!): Boolean
+    saveAmalgams(priceRequestId: ID!, data: [AmalgamInput!]!, generation: BarsetGenerationUpdate): [Amalgam!]!
+}

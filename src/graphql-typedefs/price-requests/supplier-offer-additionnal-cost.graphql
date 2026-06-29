@@ -1,0 +1,59 @@
+type SupplierOfferAdditionnalCost {
+    id: ID!
+    price: Float!
+    inputPrice: Float!
+    denomination: String
+    quantity: Int
+    unit: OptionUnit
+    supplierOfferId: ID!
+    priceRequestAdditionnalCostId: ID!
+    supplierOffer: SupplierOffer
+    priceRequestAdditionnalCost: PriceRequestAdditionnalCost
+}
+
+input SupplierOfferAdditionnalCostInpdate {
+    id: ID
+    price: Float!
+    inputPrice: Float!
+    denomination: String
+    quantity: Int
+    unit: OptionUnit
+    supplierOfferId: ID!
+    "Either this or priceRequestAdditionnalCost must be given"
+    priceRequestAdditionnalCostId: ID
+    "Only set for adding a new AdditionnalCost"
+    priceRequestAdditionnalCost: PriceRequestAdditionnalCostInput
+}
+
+input SupplierOfferAdditionnalCostInput {
+    price: Float!
+    inputPrice: Float!
+    denomination: String
+    quantity: Int
+    unit: OptionUnit
+    supplierOfferId: ID!
+    priceRequestAdditionnalCostId: ID!
+}
+
+input SupplierOfferAdditionnalCostUpdate {
+    price: Float
+    inputPrice: Float
+    denomination: String
+    quantity: Int
+    unit: OptionUnit
+}
+
+input SupplierOfferAdditionnalCostFilter {
+    supplierOfferId: ID
+    priceRequestAdditionnalCostId: ID
+}
+
+type Query {
+    supplierOfferAdditionnalCost(id: ID!): SupplierOfferAdditionnalCost
+    supplierOfferAdditionnalCosts(filter: SupplierOfferAdditionnalCostFilter): [SupplierOfferAdditionnalCost!]!
+}
+
+type Mutation {
+    createSupplierOfferAdditionnalCost(data: SupplierOfferAdditionnalCostInput): SupplierOfferAdditionnalCost
+    updateSupplierOfferAdditionnalCost(id: ID, data: SupplierOfferAdditionnalCostUpdate): SupplierOfferAdditionnalCost
+}

@@ -1,0 +1,162 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Barset resume</title>
+    <link rel="stylesheet" href="http:<%= serverUrl %>css/barset-resume.css">
+</head>
+<body>
+<h1>Mise en barre <%= priceRequest.reference ? priceRequest.reference : " - " %></h1>
+<% if (!priceRequest.priceRequestElements || priceRequest.priceRequestElements.length == 0) { %>
+<p>Aucune mise en barre réalisée !</p>
+<% } else { %>
+<!-- Generation stats -->
+<% if (priceRequest.barsetGeneration) { %>
+<h2>Génération</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Durée</th>
+        <th>Total longueur éléments</th>
+        <th>Total longueur amalgames</th>
+        <th>Total quantité éléments</th>
+        <th>Total quantité amalgames</th>
+        <th>Chute totale</th>
+        <th>Pourcentage chute</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><%= priceRequest.barsetGeneration.generationDuration ? priceRequest.barsetGeneration.generationDuration + "ms" : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.partsTotalLength ? formatLength(priceRequest.barsetGeneration.partsTotalLength) : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.amalgamsTotalLength ? formatLength(priceRequest.barsetGeneration.amalgamsTotalLength) : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.partsQuantity ? priceRequest.barsetGeneration.partsQuantity : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.amalgamsQuantity ? priceRequest.barsetGeneration.amalgamsQuantity : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.totalLoss ? formatLength(priceRequest.barsetGeneration.totalLoss) : "-" %></td>
+        <td><%= priceRequest.barsetGeneration.lossPercent ? priceRequest.barsetGeneration.lossPercent + "%" : "-" %></td>
+    </tr>
+    </tbody>
+</table>
+<% } %>
+
+<!-- Resume -->
+<h2>Résumé</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Quantité</th>
+        <th>Longueur</th>
+        <th>Référence</th>
+        <th>Matière</th>
+        <th>Traitement</th>
+        <th>EN1090</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% priceRequest.priceRequestElements.forEach(function(element) { %>
+    <tr>
+        <td><%= element.quantity ? +element.quantity : " - " %></td>
+        <td><%= element.amalgamGroup ? formatLength(element.amalgamGroup.format) : "" %></td>
+        <td><%= element.amalgamGroup ? element.amalgamGroup.reference : "" %></td>
+        <td><%= element.amalgamGroup ? element.amalgamGroup.matterRef : "" %></td>
+        <td>
+            <% if (element.amalgamGroup && element.amalgamGroup.isBlack) { %>
+            Noir
+            <% } else if (element.amalgamGroup && element.amalgamGroup.isBlasted) { %>
+            Grenaillé
+            <% } else if (element.amalgamGroup && element.amalgamGroup.isPrimaryBlasted) { %>
+            Grenaillé prépeint
+            <% } else { %>
+            -
+            <% } %>
+        </td>
+        <td><%= element.amalgamGroup && element.amalgamGroup.isEn1090 ? "Oui" : "Non" %></td>
+    </tr>
+    <% }) %>
+    </tbody>
+</table>
+
+<!-- Detail -->
+<h2>Détail de la mise en barre</h2>
+<% priceRequest.priceRequestElements.forEach(function(element) { %>
+<% if (element.amalgamGroup && element.amalgamGroup.amalgams && element.amalgamGroup.amalgams.length > 0) { %>
+<% element.amalgamGroup.amalgams.forEach(function(amalgam) { %>
+<table class="detail">
+    <thead>
+    <tr>
+        <th class="el_ref">Référence</th>
+        <th class="el_matter">Matière</th>
+        <th class="el_process">Traitement</th>
+        <th class="el_en">EN1090</th>
+        <th class="el_length">Longueur</th>
+        <th class="el_loss">Chute</th>
+        <th class="el_stock">Empl. stock</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="element">
+        <td class="el_ref"><%= element.amalgamGroup ? element.amalgamGroup.reference : "" %></td>
+        <td class="el_matter"><%= element.amalgamGroup ? element.amalgamGroup.matterRef : "" %></td>
+        <td class="el_process">
+            <% if (element.amalgamGroup && element.amalgamGroup.isBlack) { %>
+            Noir
+            <% } else if (element.amalgamGroup && element.amalgamGroup.isBlasted) { %>
+            Grenaillé
+            <% } else if (element.amalgamGroup && element.amalgamGroup.isPrimaryBlasted) { %>
+            Grenaillé prépeint
+            <% } else { %>
+            -
+            <% } %>
+        </td>
+        <td class="el_en"><%= element.amalgamGroup && element.amalgamGroup.isEn1090 ? "Oui" : "Non" %></td>
+        <td class="el_length"><%= element.amalgamGroup ? formatLength(element.amalgamGroup.format) : "" %></td>
+        <td class="el_loss"><%= amalgam.loss != null ? formatLength(amalgam.loss.toString()) : "" %></td>
+        <td class="el_stock"><%= amalgam.isInStock ? amalgam.stockPosition : "-" %></td>
+    </tr>
+    <% if (amalgam.parts && amalgam.parts.length > 0) { %>
+    <tr class="part">
+        <td class="wrapper-cell" colspan="7">
+            <table>
+                <thead>
+                <tr>
+                    <th class="space-cell"></th>
+                    <th class="project">Projet</th>
+                    <th class="supply">Liste appro.</th>
+                    <th class="position">Position</th>
+                    <th class="length">Longueur</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% amalgam.parts.forEach(function(amalgamPart, index) { %>
+                <tr>
+                    <% if (index == 0) { %>
+                    <td class="space-cell" rowspan="<%= amalgam.parts.length %>"></td>
+                    <% } %>
+                    <td class="project">
+                        <%= amalgamPart.supplyListElement && amalgamPart.supplyListElement.supplyList && amalgamPart.supplyListElement.supplyList.project ?
+                        amalgamPart.supplyListElement.supplyList.project.reference : "" %>
+                    </td>
+                    <td class="supply">
+                        <%= amalgamPart.supplyListElement && amalgamPart.supplyListElement.supplyList && amalgamPart.supplyListElement.supplyList.description ?
+                        amalgamPart.supplyListElement.supplyList.description : "" %>
+                    </td>
+                    <td class="position">
+                        <%= amalgamPart.supplyListElement && amalgamPart.supplyListElement.denomination ? amalgamPart.supplyListElement.denomination : "" %>
+                    </td>
+                    <td class="length">
+                        <%= amalgamPart.supplyListElement && amalgamPart.supplyListElement.format ? amalgamPart.supplyListElement.format + "mm" : "" %>
+                    </td>
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <% } %>
+    </tbody>
+</table>
+<% }) %>
+<% } %>
+<% }) %>
+<% } %>
+</body>

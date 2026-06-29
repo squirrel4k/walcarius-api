@@ -1,0 +1,40 @@
+type Query {
+    getSmtpConfig(id: Int!): SmtpConfig
+}
+
+type Mutation{
+    createSmtpConfig(smtp: SmtpConfigInput!): SmtpConfig
+    updateSmtpConfig(smtp: UpdateSmtpConfig!, id: Int!): SmtpConfig
+}
+
+type SmtpConfig{
+    id: Int
+    loginId: Int
+    username: String
+    email: String
+    password: String
+    host: String
+    port: Int
+    active: Boolean
+}
+
+input SmtpConfigInput{
+    loginId: Int!
+    username: String
+    email: String
+    password: String
+    host: String
+    port: Int
+    active: Boolean 
+}
+
+input UpdateSmtpConfig {
+    id:Int
+    username: String
+    email: String
+    password: String
+    host: String
+    port: Int 
+    active: Boolean 
+}
+

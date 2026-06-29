@@ -1,0 +1,41 @@
+type SupplierOfferElementOption {
+    id: ID!
+    price: Float
+    supplierOfferElementId: ID!
+    priceRequestElementOptionId: ID!
+    supplierOfferElement: SupplierOfferElement
+    priceRequestElementOption: PriceRequestElementOption
+}
+
+input SupplierOfferElementOptionInput {
+    price: Float
+    supplierOfferElementId: ID!
+    priceRequestElementOptionId: ID!
+}
+
+input SupplierOfferElementOptionUpdate {
+    price: Float
+}
+
+input SupplierOfferElementOptionInpdate {
+    id: ID
+    price: Float
+    supplierOfferElementId: ID
+    priceRequestElementOptionId: ID
+}
+
+input SupplierOfferElementOptionFilter {
+    supplierOfferElementId: ID
+    priceRequestElementOptionId: ID  
+}
+
+type Query {
+    supplierOfferElementOption(id: ID!): SupplierOfferElementOption
+    supplierOfferElementOptions(filter: SupplierOfferElementOptionFilter): [SupplierOfferElementOption!]!
+}
+
+type Mutation {
+    createSupplierOfferElementOption(data: SupplierOfferElementOptionInput): SupplierOfferElementOption
+    updateSupplierOfferElementOption(id: ID!, data: SupplierOfferElementOptionUpdate): SupplierOfferElementOption
+    deleteSupplierOfferElementOption(id: ID!): Boolean
+}

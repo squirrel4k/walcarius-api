@@ -1,0 +1,1 @@
+ALTER TABLE `purchaseOrderElements` ADD `status` VARCHAR(20) NOT NULL DEFAULT 'ATTENTE';

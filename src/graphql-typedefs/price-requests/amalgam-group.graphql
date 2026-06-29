@@ -1,0 +1,21 @@
+type AmalgamGroup {
+    id: ID
+    reference: String!
+    format: Float!
+    isEn1090: Boolean!
+    isBlack: Boolean!
+    isBlasted: Boolean!
+    isPrimaryBlasted: Boolean!
+    isCut: Boolean!
+    matterRef: String
+    icon: String
+    remark: String
+    isManual: Boolean
+    matterId: ID
+    matter: Matter
+    supplyCategoryId: ID
+    supplyCategory: SupplyCategory
+    elementId: ID
+    element: Element
+    amalgams: [Amalgam!]!
+}

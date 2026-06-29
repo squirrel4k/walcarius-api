@@ -1,0 +1,19 @@
+enum ElementNatureDefinitionType {
+    STRING
+    INT
+    FLOAT
+    BOOLEAN
+}
+
+type ElementNatureDefinition {
+    id: ID!
+    name: String!
+    type: ElementNatureDefinitionType!
+    regex: String
+    min: Int
+    max: Int
+    nullable: Boolean!
+    redefine: Boolean!
+    displayName: String
+    unit: String
+}

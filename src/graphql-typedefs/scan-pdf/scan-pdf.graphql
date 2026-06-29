@@ -1,0 +1,31 @@
+type ScanPdf{
+    id: ID!
+    purchaseOrderId: Int
+    name: String
+    url: String
+    comment: String
+    createdAt: Date 
+    deletedAt: Date 
+}
+
+input ScanPdfInput{
+    purchaseOrderId: Int
+    name: String
+    url: String
+}
+
+input EditScanPdfInput{
+    name: String
+    comment: String
+}
+
+type Mutation {
+    addScanpdf(data: ScanPdfInput!): ScanPdf
+    editScanpdf(id: Int!, data: EditScanPdfInput!): ScanPdf
+    deleteScanPdf(id: ID!): Boolean
+}
+
+type Query {
+    getScanPdf(purchaseOrderId: Int!): [ScanPdf]
+    getOneScanPdf(id: Int!) : ScanPdf
+}

@@ -1,0 +1,12 @@
+type AmalgamPart {
+    id: ID
+    amalgamId: ID
+    amalgam: Amalgam
+    supplyListElementId: ID
+    supplyListElement: SupplyListElement
+}
+
+input AmalgamPartInput {
+    supplyListElementId: ID
+    length: Float
+}

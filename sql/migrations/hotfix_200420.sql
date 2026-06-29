@@ -1,0 +1,1 @@
+ALTER TABLE `amalgams` CHANGE COLUMN `loss` `loss` DECIMAL(8,2) NOT NULL;

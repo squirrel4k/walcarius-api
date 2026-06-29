@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Quote</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link href="http:<%= serverUrl %>css/quote.css" rel="stylesheet">
+
+    <style>
+        @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+    </style>
+</head>
+<div class="pdf">
+    <div class="pdf__header">
+        <div class="pdf-company">
+            <div class="pdf-company__logo">
+                <img src="http:<%= serverUrl %>img/logo_walcarius.jpg" alt="">
+            </div>
+            <ul class="pdf-company__infos">
+                <li class="pdf-company__title">Walcarius SA</li>
+                <li>TVA: BE 0426 588 578</li>
+                <li>Rue des Garennes 8</li>
+                <li>B-7700 Mouscron</li>
+                <li>Tel: +32 (0)56 48 15 15</li>
+                <li>Mail: info@walcarius.be</li>
+            </ul>
+            <ul class="pdf-company__ref pdf-ref">
+                <li class="pdf-ref__title"><%= quote.number ? quote.number : "" %></li>
+                <li>Devis : <%= quote.name ? quote.name : "" %></li>
+                <li>Date : <%= quote.createdAt ? formatDate("/", true, new Date(quote.createdAt * 1000)) : "" %> </li>
+            </ul>
+        </div>
+        <hr>
+    </div>
+    <div class="pdf__content">
+        <p><%= translate("pdf.quote.salute", lang) %></p>
+        <p><%= translate("pdf.quote.presentation", lang) %></p>
+    </div>
+    <!-- ------ QUOTE SECTION ------ -->
+    <div class="pdf__content">
+        <%- quote.remarks ? formatRemarks(quote.remarks) : "" %>
+        <p><%= translate("pdf.quote.total_price", lang) %> : <%= quote.totalPrice ? quote.totalPrice : "" %> €</p>
+    </div>
+    <!-- ------ QUOTE SECTION ------ -->
+    <div class="pdf__content">
+        <p><%= translate("pdf.quote.courtesy", lang) %></p>
+        <br/>
+        <p>Francis Walcarius</p>
+    </div>
+    <div class="pdf__sign">
+        <div class="pdf-sign">
+            <div class="pdf-sign__title"><%= translate("pdf.quote.sign_walcarius", lang) %></div>
+        </div>
+        <div class="pdf-sign">
+            <div class="pdf-sign__title"><%= translate("pdf.quote.sign_client", lang) %></div>
+        </div>
+    </div>
+    <div class="pdf__content" style="page-break-before: always;">
+        <div class="overline">Conditions générales de vente</div>
+        <div class="pdf__cgv" style="white-space: pre">
+    <h2>1. Généralités</h2>
+    SA Walcarius dont le siège social est situé à 7700 Mouscron, Warandenstraat 8, inscrite dans la Banque
+    Carrefour des Entreprises sous le numéro 0426.588.578 (ci-après «Walcarius»), a pour activité principale la
+    construction de structures métalliques destinées à de nombreux secteurs (industrie, publicité, construction,
+    aménagement, supports publicitaires, etc…). Elle propose des structures types, préconçues, mais développe
+    également des Produits sur-mesure répondant spécifiquement aux demandes de ses clients, acheteurs
+    professionnels. L’ensemble des réalisations proposées par Walcarius (ci-après les « Produits ») et, en cas de
+    convention écrite, l’installation et montage de celles-ci, sont visées par les présentes conditions.
+    Les présentes conditions générales (ci-après les « CGV») s’appliquent à toutes les ventes de Produits conclues
+    par WALCARIUS avec des acheteurs professionnels (ci-après « l’Acheteur »), quelles que soient les clauses
+    pouvant figurer sur les documents de l’Acheteur et notamment ses conditions générales d’achat.
+    Walcarius se réserve le droit de déroger à certaines clauses en fonction des négociations menées avec
+    l’Acheteur, par l’établissement de conditions particulières de vente (ci-après « CPV ») ou d’un contrat spécifique
+    de travaux, notamment en cas de demandes particulières de l’Acheteur ou si Walcarius intervient dans la
+    construction d’un ouvrage. Ces dérogations ne pourront émaner que d’un document écrit et signé par Walcarius
+    antérieurement à la commande.
+    Les CGV sont considérées comme acceptées par l’Acheteur lorsque celui-ci passe une première commande à
+    laquelle elles sont attachées ou lorsqu’il les signe expressément. Elles peuvent être modifiées à tout moment et
+    sans préavis par Walcarius, et ces modifications sont applicables dès leur notification à l’Acheteur, pour toute
+    commande passée postérieurement. Le simple fait pour Walcarius de ne pas se prévaloir de l’une des conditions
+    des présentes CGV ne pourra en aucun cas être interprété comme une renonciation à s’en prévaloir.
+    <h2>2. Commandes</h2>
+    Sauf acceptation formelle et écrite par Walcarius d’une commande ne respectant pas ce formalisme, pour pouvoir
+    être prise en compte par Walcarius, toute commande de l’Acheteur doit en principe être réalisée via le bon de
+    commande fourni par Walcarius dument signé par l’Acheteur, porter sur des produits effectivement offerts à la
+    vente, être accompagnée de l’acompte prévu et, pour une première commande, être accompagnée des
+    présentes CGV signées.
+    Walcarius n’est engagé qu’à compter de son acceptation expresse et écrite de la commande de l’Acheteur qui
+    pourra être refusée si l’Acheteur est débiteur du paiement d’une commande précédente ou si les caractéristiques
+    ou le coût de réalisation du Produits ne semblent pas appropriés.
+    Toute commande adressée par l’Acheteur constitue à son égard un engagement d’achat irrévocable. Une fois
+    acceptée par Walcarius, une commande ne peut plus être ni modifiée, ni annulée. Si toutefois Walcarius entend
+    donner son accord express et écrit pour :
+    - une modification de commande, alors Walcarius sera délié des délais initialement convenus pour
+    l’exécution de la commande ;
+    - une annulation de commande, alors Walcarius pourra conditionner son accord au paiement par
+    l’Acheteur d’une pénalité de résiliation de nature à compenser le préjudice subi par Walcarius, en fonction
+    de l’état d’avancement de la conception des Produits, avec un minimum de 20 % du montant total de la
+    commande. 
+    <h2>3. Livraison</h2>
+    <h3>3.1. Mise à disposition des Produits</h3>
+    La livraison d’entend de la mise à disposition des Produits à l’Acheteur.
+    A défaut de précision contraire sur la Confirmation de commande, les Produits sont vendus Ex Works : les frais et
+    risques de transport sont à la charge exclusive de l’Acheteur. La responsabilité de Walcarius ne peut en aucun
+    cas être mise en cause pour faits en cours de transport, de destruction, avaries, perte ou vol, même s'il a choisi le
+    transporteur. L’Acheteur qui refuserait de prendre livraison des Produits commandés sera redevable envers
+    Walcarius d’une indemnité de stockage à partir du 15
+    ème jour après la date de livraison initialement prévue, établie
+    en fonction des caractéristiques des Produits mais qui ne saurait être inférieure à 10 % de leur prix de vente par
+    jour.
+    La confirmation de la commande par Walcarius peut mentionner un délai de livraison. Ce délai de livraison n'est
+    donné qu'à titre informatif et indicatif, celui-ci dépendant notamment des conditions de réalisation des Produits,
+    de la disponibilité des transporteurs et de l'ordre d'arrivée des commandes.
+    Les délais d'exécution sollicités ou imposés par un Acheteur ne sont jamais garantis et les retards de livraison ne
+    peuvent donner lieu à aucune pénalité ou indemnité ni motiver l'annulation de la commande, sauf retard supérieur
+    à 90 jours calendaires non imputable à un cas de Force Majeure ou à une faute de l'Acheteur.
+    <h2>4. Responsabilité contractuelle classique</h2>
+    <h3>4.1. Réserves et non-conformité</h3>
+    Il appartient à l’Acheteur de vérifier les Produits livrés et, le cas échéant, d'effectuer toutes réserves nécessaires
+    dans les conditions qui suivent, à défaut les Produits seront réputés avoir été livrés sans réserves.
+    Les réserves liées à la conformité des Produits à la commande (références, quantités, etc…) ou aux vices
+    apparents devront être formulées dans les trois (3) jours ouvrés de la réception des Produits, par lettre
+    recommandée avec accusé de réception adressée à Walcarius. Le courrier de l’Acheteur devra être accompagné
+    de tous les justificatifs utiles de la réalité des réserves. Walcarius pourra procéder, directement ou indirectement,
+    à toute constatation et vérification sur les Produits.
+    Toute utilisation ou revente des Produits par l’Acheteur le prive de la faculté d’émettre des réserves. La garantie
+    ne couvre pas les défauts et détériorations des Produits consécutifs au transport ou aux conditions d’installation,
+    de stockage et/ou de conservation chez l’Acheteur. En aucun cas les réserves émises par l’Acheteur ne
+    l’autorisent à suspendre le paiement des Produits.
+    Aucune action en non-conformité ne pourra être engagée par l’Acheteur qui ne pourra plus invoquer la nonconformité
+    des produits, ni opposer celle-ci en demande reconventionnelle pour se défendre à l'occasion d'une
+    action engagée par Walcarius en recouvrement de créance :
+    - S’il n’a pas émis les réserves dans le délai de trois (3) jours mentionné ci-dessus ;
+    - Si, lorsqu’il a émis les réserves dans le délai de trois (3) jours mentionné ci-dessus, il n’engage pas
+    l’action dans les trente (30) jours de la livraison ;
+    <h3>4.2. Vices cachés</h3>
+    Walcarius garantit tout vice caché, c'est à dire les défauts de fabrication ou de réalisation du Produit le rendant
+    impropre à son usage et non susceptibles d'être décelés par l'Acheteur avant son utilisation, pendant un délai de
+    6 mois et cela, dans les conditions légales et sous les réserves suivantes :
+    - La garantie ne s'applique qu'aux Produits achetés directement par l’Acheteur auprès de Walcarius ;
+    - La garantie ne s'applique qu'aux Produits entièrement fabriqués par Walcarius ; 
+    - La garantie se limite au remplacement ou à la réparation des pièces défectueuses sans que l’Acheteur ne
+    puisse prétendre à l'obtention de dommages et intérêts, pour quelque cause que ce soit ;
+    - La garantie ne couvre pas les défauts et détériorations des Produits consécutifs au transport, aux
+    conditions de stockage et/ou de conservation chez l’Acheteur ou aux conditions d’installations dès lors
+    qu’elle n’est pas réalisée par Walcarius ;
+    - La garantie est exclue dès lors qu'il a été fait une installation ou un usage anormal des Produits, ou non
+    conforme aux conditions d’utilisation, de montage ou d’installation ;
+    - Le vice a été porté à la connaissance de Walcarius par lettre recommandée avec accusé de réception dans
+    un délai de trois (3) jours francs à partir de sa découverte.
+    <h3>4.3. Retours</h3>
+    Si une non-conformité, un vice apparent ou un vice caché est effectivement constaté par Walcarius et de nature à
+    faire jouer sa garantie alors :
+    L’Acheteur ne pourra demander que le remplacement des articles non conformes et/ou le complément à
+    apporter pour combler les manquants, sans que l’Acheteur ne puisse prétendre à une quelconque indemnité
+    ou à la résolution de la commande.
+    - Les frais de retour et/ou d’envoi du complément seront à la charge de Walcarius mais aucun retour de
+    Produits ne pourra être effectué par l’Acheteur sans l’accord préalable exprès et écrit de Walcarius. Seul le
+    transporteur mandaté par Walcarius est habilité à effectuer le retour des produits sous peine de perte de la
+    garantie. En toutes hypothèses, en cas de dommages directs ou indirects de nature à engager la
+    responsabilité de Walcarius, celle-ci ne saurait être engagée pour un montant supérieur à celui couvert par
+    son assurance responsabilité civile professionnelle.
+    <h2>5. Installation réalisée par Walcarius</h2>
+    Toute mission confiée par l’Acheteur qui excéderait la création d’un livrable et qui inclurait l’intervention de
+    Walcarius sur un ouvrage ou la création par Walcarius d’un ouvrage, sera détaillée dans un devis ou un cahier
+    des charges qui seul fera foi des obligations de moyen et de résultat mises à la charge de Walcarius.
+    Cette mission donnera lieu à une réception par laquelle l’Acheteur déclare accepter l'ouvrage avec ou sans
+    réserves. Cette réception interviendra à la demande de la partie la plus diligente, soit à l'amiable, soit à défaut
+    judiciairement.
+    <h3>5.1. Garanties entrepreneur</h3>
+    Si Walcarius est amené à être qualifié d’entrepreneur au sens des dispositions des articles 1792 et 2270 du code
+    civil, Walcarius répondra des garanties légales dans le cadre des dispositions légales applicables :
+    - La garantie pour les vices cachés véniels pour une durée d’un (1) an à compter de la réception des
+    travaux et pour autant que le vice ait été porté à la connaissance de Walcarius par lettre recommandée
+    avec accusé de réception dans un délai de trois (3) jours francs à partir de sa découverte;
+    - La garantie décennale visant à réparer les dommages survenus dans les dix ans suivant la réception qui
+    compromettent la solidité de l’ouvrage.
+    Toute demande de mise en jeu d’une garantie légale devra être formulée par lettre recommandée avec accusé
+    de réception adressée à Walcarius dans les délais légaux rappelés ci-dessus.
+    <h3>5.2. Exclusions de Garanties</h3>
+    Il appartient à l’Acheteur de souscrire ou de s’assurer de la souscription par son Maitre d’ouvrage d’une
+    assurance tous risques chantier et, le cas échéant, d’une assurance de responsabilité décennale. Walcarius
+    ne saurait être tenu en cas de manquement de l’Acheteur ou Maitre d’Ouvrage à ce titre.
+    Walcarius n’est pas responsable de la sécurité du chantier sur lequel il doit intervenir à la demande de
+    l’Acheteur. L’Acheteur demeure responsable de tout incident ou accident qui surviendrait sur le chantier et 
+    doit être assuré à ce titre. L’Acheteur est tenu de transmettre à Walcarius en temps utile avant son
+    intervention sur le chantier, l’intégralité des consignes spécifiques de sécurité.
+    L’Acheteur sera tenu de justifier, à première demande de Walcarius, de la souscription des assurances
+    obligatoires ou utiles. A défaut, Walcarius pourra valablement suspendre l’exécution de ses obligations
+    jusqu’à production des justificatifs nécessaires.
+    <h2>6. Prix</h2>
+    Les prix et tarifs applicables à la commande sont ceux applicables le jour de la passation de commande par
+    l’Acheteur dans des conditions conformes aux dispositions de l’article 2. Les prix et tarifs sont fixés exclusivement
+    par Walcarius qui peut les modifier à tout moment pour les commandes à venir. Aucun document émanant de
+    l’Acheteur ne saurait modifier les prix et tarifs applicables. Les prix s'entendent toujours hors taxes, produits non
+    emballés et hors coût de livraison. Ils sont calculés nets, sans escompte, et payables selon les modalités définies
+    ci-après.
+    L'Acheteur ne bénéficiera pas d’escomptes, remises ou ristournes, sauf dans le cas où ceux-ci ont été confirmés
+    préalablement par écrit par Walcarius.
+    <h2>7. Paiement</h2>
+    Les factures sont payables au comptant en totalité et en un seul versement à 30 jours calendaires fin de mois
+    après leur émission. Seul l'encaissement effectif des sommes dues par l’Acheteur sera considéré comme valant
+    complet paiement. Toute contestation sur une facture devra, pour être opposable à Walcarius, être émise par
+    lettre recommandée avec accusé de réception dans les 8 jours de la réception de la facture et avec tout justificatif
+    utile de la contestation.
+    En cas de toute première commande ou si Walcarius a des raisons légitimes de craindre des difficultés de
+    paiement de la part de l’Acheteur, soit que celui-ci ne présente aucune garantie de solvabilité, soit qu’il ait déjà
+    été débiteur de commandes impayées envers Walcarius ou, de manière notoire, envers d’autres fournisseurs,
+    Walcarius pourra subordonner l'acceptation de la commande ou la poursuite de son exécution au paiement
+    immédiat d’un acompte ou au paiement anticipé de la facture correspondante.
+    En cas de refus par l’Acheteur des conditions posées par Walcarius, sans qu’il ne présente pour autant d’une
+    autre garantie suffisante de solvabilité, Walcarius pourra refuser d'honorer la (les) commande(s) passée(s) et/ou
+    de livrer la marchandise concernée, sans que l’Acheteur ne puisse arguer d'un refus de vente injustifié, ou
+    prétendre à une quelconque indemnité.
+    <h2>8. Retard de paiement</h2>
+    Tout montant non réglé à l'échéance donnera lieu :
+    - A l’application immédiate et de plein droit d’un intérêt fixé de 12% par an jusqu’au parfait paiement.
+    - Après mise en demeure restée infructueuse pendant 8 jours, à l’application d’une pénalité forfaitaire de
+    12 % du montant des sommes impayées
+    - A la récupération auprès de l’Acheteur des frais de recouvrement en cas de nécessité de procéder par
+    mise en demeure ou de recours à un huissier et le cas échéant des frais exposés par Walcarius pour
+    faire valoir ses droits en justice.
+    Les pénalités et/ou intérêts et/ou frais imputables à l’Acheteur sont calculés sur les sommes dues TTC et seront
+    d'office portées au débit du compte de l’Acheteur. Walcarius se réserve le droit de refuser toute commande ou de
+    suspendre toute commande ou livraison en cours au bénéfice d’un Acheteur qui serait débiteur d’une commande
+    impayée. 
+    <h2>9. Réserve de propriété</h2>
+    La vente est conclue avec une réserve de propriété. Par conséquent, le transfert de propriété des Produits
+    n'interviendra qu'après paiement intégral du prix, en principal et accessoire de l’intégralité de la facture afférente.
+    De convention expresse, Walcarius pourra faire jouer les droits qu'il détient au titre de la présente clause de
+    réserve de propriété, pour l'une quelconque de ses créances, sur la totalité de ses Produits en possession de
+    l’Acheteur.
+    L’Acheteur ne pourra revendre les Produits que dans le cadre de l'exploitation normale de son entreprise. Il
+    s’interdit de revendre les Produits à concurrence de la quantité de Produits impayés à Walcarius et ne pourra en
+    aucun cas nantir ou consentir de sûreté sur les Produits impayés à Walcarius. Tout acte contraire serait purement
+    et simplement inopposable à Walcarius.
+    En cas d’impayé Walcarius pourra exiger la restitution immédiate des produits en possession de l’Acheteur, le
+    quel s'engage, d'ores et déjà, à laisser libre accès à ses entrepôts, magasins ou autres à cette fin.
+    En cas de procédure collective affectant l’Acheteur, Walcarius pourra exiger la réalisation immédiate d’un
+    inventaire de ses produits en possession de l’Acheteur qui s'engage, d'ores et déjà, à laisser libre accès à ses
+    entrepôts, magasins ou autres à cette fin.
+    <h2>10. Force majeure</h2>
+    Sont considérés comme cas de force majeure ou cas fortuits, les événements indépendants de la volonté des
+    parties, qu'elles ne pouvaient raisonnablement être tenues de prévoir, et qu'elles ne pouvaient raisonnablement
+    éviter ou surmonter, dans la mesure où leur survenance rend totalement impossible l'exécution des obligations.
+    Sont notamment assimilés à des cas de force majeure ou fortuits déchargeant Walcarius de son obligation de
+    livrer dans les délais initialement prévus : les grèves de la totalité ou d'une partie du personnel de Walcarius ou
+    de ses transporteurs habituels, l'incendie, l'inondation, la guerre, les arrêts de production dus à des pannes
+    fortuites, l'impossibilité d'être approvisionné en matière première, les épidémies, les barrières de dégel, les
+    barrages routiers, grève ou rupture d'approvisionnement en électricité ou en gaz ou en tout fluide nécessaire.
+    Dans de telles circonstances, Walcarius préviendra l’Acheteur de l’événement de Force Majeure et de la
+    suspension immédiate des obligations des parties, de plein droit et sans indemnité.
+    Si l'événement de Force Majeure venait à durer plus de trente (30) jours calendaires à compter de la date de
+    survenance de celui-ci, la vente conclue entre les parties pourra être résiliée par l’une ou l’autre des parties sans
+    qu'aucune des parties puisse prétendre à l'octroi de dommages et intérêts.
+    Cette résiliation prendra effet à la date de première présentation de la lettre recommandée avec accusé de
+    réception dénonçant la vente.
+    <h2>11. Propriété intellectuelle</h2>
+    Tous les documents techniques, produits, photographies remis à nos clients demeurent la propriété exclusive de
+    Walcarius, seul titulaire des droits de propriété intellectuelle sur ces documents, et doivent lui être rendus à sa
+    demande. L’Acheteur s'engage à ne faire aucun usage de ces documents, susceptible de porter atteinte aux
+    droits de propriété industrielle ou intellectuelle de Walcarius et notamment à ne les divulguer à aucun tiers.
+    Walcarius demeure le seul titulaire des droits et détenteur du savoir-faire sur les éléments créés pour un
+    Acheteur.
+    <h2>12. Droit applicable et attribution de juridiction</h2>
+    Les présentes conditions générales de vente et les ventes qu'elles régissent sont régies par la loi belge à
+    l'exclusion de tout autre droit.
+    Tout différend au sujet de l'application des présentes conditions générales de vente et de leur interprétation, de
+    leur exécution ainsi que toute difficulté liée au paiement du prix ou tout litige entre Walcarius et l’Acheteur, sera 
+    porté devant le Tribunal de Commerce du Hainaut, Division de Tournai, quel que soit le lieu de la commande, de
+    la livraison, et du paiement et le mode de paiement, et même en cas d'appel en garantie ou de pluralité de
+    défendeurs.
+    <h2>13. Indivisibilité</h2>
+    L'annulation éventuelle d'une ou plusieurs clauses des présentes conditions ne saurait porter atteinte à ses
+    autres stipulations qui continueront de produire leur plein et entier effet pour autant que l'économie générale de la
+    convention puisse être sauvegardée.
+    <h2>14. Confidentialité / non exclusivité</h2>
+    D’une manière générale, l’Acheteur s'interdit de divulguer, directement ou indirectement, quelques informations,
+    connaissances ou savoir-faire que ce soient concernant Walcarius et ses modalités de fonctionnement, auxquels
+    il aurait pu avoir accès dans le cadre de l'exécution des missions confiées à Walcarius, à moins que lesdites
+    informations, connaissances ou savoir-faire ne soient tombés dans le domaine public ou que leur divulgation soit
+    rendue nécessaire en vertu d'un règlement particulier ou d'une injonction administrative ou judiciaire.
+    Le fait pour un Acheteur de confier une mission à Walcarius n’entraine aucune obligation de non concurrence ou
+    d’exclusivité au profit de l’Acheteur ; Walcarius pouvant toujours traiter avec tout autre acheteur, y compris pour
+    des missions similaires ou identiques.
+    <h2>15. Acceptation de l'Acheteur</h2>
+    L’Acheteur atteste avoir pris connaissance des présentes conditions générales et déclare expressément les
+    agréer. Il renonce à se prévaloir de tout document contradictoire et, notamment, ses propres conditions générales
+    d'achat.
+        </div>
+    </div>
+</div>
+</html>

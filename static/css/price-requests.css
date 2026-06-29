@@ -1,0 +1,248 @@
+body {
+  margin: 0;
+  font-size: 0.5rem; 
+  font-family: sans-serif;
+}
+
+.container {
+  margin-right: 5%;
+  margin-left: 5%;
+  position: relative; 
+}
+
+.logo {
+  text-align: center; 
+}
+
+.logo img {
+  height: 120px; 
+}
+
+.info::after {
+  content: ".";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0; 
+}
+
+.info-walca {
+  width: 10rem;
+  float: left;
+  height: auto; 
+}
+
+.info-walca p {
+  margin: 0; 
+}
+
+.info-customer {
+  width: 15rem;
+  height: auto;
+  float: right;
+  border: 1px solid black; 
+}
+
+.info-customer div:nth-child(1) {
+  font-size: large;
+  height: 50%; 
+}
+
+.provider-case {
+  margin: 0.2rem;
+  font-weight: bolder; 
+}
+
+.provider-case_content {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.2rem; 
+}
+
+.title {
+  text-align: center;
+  font-size: 0.4rem;
+  margin-bottom: 0.2rem; 
+}
+
+.title_content {
+  border: 1px solid black; 
+}
+
+table {
+  width: 100%;
+}
+
+table th {
+  text-align: left;
+  padding-left: 0.1rem;
+  border: 1px solid black;
+  background: #d6d5d5; 
+}
+
+table th:first-child {
+  border-right: none; 
+}
+
+table th:last-child {
+  border-left: none; 
+}
+
+table tbody tr {
+  border: 1px solid black;
+  page-break-inside: avoid !important; 
+}
+
+table tbody tr:first-child {
+  border-top: none; 
+}
+
+table tbody tr td {
+  padding: 0.2rem 0 0.2rem 0.2rem;
+  border-right: 1px solid black; 
+}
+
+table tbody tr td ul {
+  padding: 0 0 0 1rem !important;
+  margin: 0 !important; 
+  box-sizing: border-box;
+}
+
+table tbody tr td:last-child {
+  border-right: none; 
+}
+
+table, th, td, tr {
+  border-collapse: collapse; 
+}
+
+.size_ref {
+  padding: 0.1rem 0 0 0.2rem;
+  width: 15%;
+  vertical-align: baseline; 
+}
+
+.size_art {
+  width: 44%;
+  vertical-align: baseline;
+}
+
+.size_art__ref {
+  width: 20%;
+  vertical-align: baseline;
+}
+
+.size_art__matter {
+  width: 12%;
+  vertical-align: baseline;
+}
+
+.size_art__processing {
+  width: 12%;
+  vertical-align: baseline;
+}
+
+.size_art__plate {
+  width: 32%;
+  vertical-align: baseline;
+}
+
+.size_qua {
+  width: 10%;
+  vertical-align: baseline;
+}
+
+td.size_qua {
+  padding-left: 0;
+  text-align: center;
+}
+
+.size_en1090 {
+  width: 7%;
+  vertical-align: baseline;
+}
+
+th.size_en1090 {
+  padding-left: 1px;
+}
+
+td.size_en1090 {
+  padding-left: 0;
+  text-align: center;
+}
+
+.size_pri {
+  width: 16%;
+  vertical-align: baseline;
+}
+
+.size_uni {
+  width: 8%;
+  vertical-align: baseline;
+}
+
+td.size_uni {
+  padding-left: 0;
+  text-align: center;
+}
+
+.content {
+  page-break-inside: avoid;
+}
+
+.size_sub_table {
+  width: 79%;
+  padding: 0rem;
+}
+
+.size_sub_table table tr td {
+  border-right: 1px solid black;
+}
+
+.size_sub_table table tr {
+  border: 0rem; 
+}
+
+.size_sub_table table tr:not(:last-child) {
+  border-bottom: 1px solid black;
+}
+
+.size_ac_qty {
+  padding: 0 0 0 0.2rem;
+  width: 10%;
+  vertical-align: baseline; 
+}
+
+.size_ac_typ {
+  width: 25%;
+  vertical-align: baseline;
+}
+
+.size_ac_den {
+  width: 41%;
+  vertical-align: baseline;
+}
+
+.size_ac_pri {
+  width: 16%;
+  vertical-align: baseline;
+}
+
+.size_ac_uni {
+  width: 8%;
+  padding-left: 1px;
+  vertical-align: baseline;
+}
+
+td.size_ac_uni {
+  padding-left: 0;
+  text-align: center;
+}
+
+td {
+  font-size: 7px;
+}
+.order_conditions_content {
+    font-size: 10px;
+}

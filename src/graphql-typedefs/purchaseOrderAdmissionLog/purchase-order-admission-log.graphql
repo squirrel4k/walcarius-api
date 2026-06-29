@@ -1,0 +1,24 @@
+type IpurchaseOrderAdmissionLog{
+    id: ID!
+    quantity: Int 
+    date: Date 
+    location: String 
+    admitedBy: String
+    idElement: Int
+}
+
+input purchaseOrderAdmissionLogInput{
+    quantity: Int 
+    date: Date 
+    location: String 
+    admitedBy: String
+    idElement: Int
+}
+
+type Mutation {
+    addAdmission(data: purchaseOrderAdmissionLogInput!): IpurchaseOrderAdmissionLog
+}
+
+type Query {
+    getAdmission(id: Int!): [IpurchaseOrderAdmissionLog]
+}

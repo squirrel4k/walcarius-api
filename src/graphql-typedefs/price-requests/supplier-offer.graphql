@@ -1,0 +1,49 @@
+type SupplierOffer {
+    id: ID!
+    reference: String!
+    supplierReference: String
+    remark: String
+    isSent: Boolean!
+    sendingDate: Date
+    supplierId: ID!
+    supplier: Supplier
+    supplierContactId: ID
+    supplierContact: SupplierContact
+    priceRequestId: ID!
+    priceRequest: PriceRequest
+    elements: [SupplierOfferElement!]!
+    possibleElements: [PossiblePriceRequestElement!]!
+    totalPrice: Float
+    additionnalCosts: [SupplierOfferAdditionnalCost!]!
+    totalAdditionnalCosts: Float
+}
+
+input SupplierOfferFilter {
+    priceRequestId: ID!
+}
+
+input SupplierOfferUpdate {
+    supplierReference: String
+    remark: String
+    elements: [SupplierOfferElementInpdate!]!
+    additionnalCosts: [SupplierOfferAdditionnalCostInpdate!]!
+    deletedVariantIds: [ID!]
+    deletedVariantOptionIds: [ID!]
+    deletedSupplierOfferElementOptionIds: [ID!]
+    deletedAdditionnalCostIds: [ID!]
+    supplierContactId: ID
+}
+
+type Query {
+    supplierOffer(id: ID!): SupplierOffer
+    supplierOffers(filter: SupplierOfferFilter!): [SupplierOffer!]!
+}
+
+type Mutation {
+    associateSuppliersToPriceRequest(priceRequestId: ID!, supplierIds: [ID!]!): [SupplierOffer!]!
+    updateSupplierOffer(id: ID!, data: SupplierOfferUpdate!): SupplierOffer
+    sendPriceRequestMail(id: ID!): Boolean
+    sendPriceRequestMails(ids: [ID!]!): Boolean
+    deleteSupplierOffer(id: ID!): Boolean
+    deleteSupplierOffers(ids: [ID!]!): Boolean
+}

@@ -1,0 +1,63 @@
+enum AdditionnalCostType {
+    TRANSPORT_FEE
+    PACKAGING_FEE
+    CERTIFICATE_FEE
+    OTHER
+}
+
+enum AdditionnalCostUnit {
+    EURO
+    EURO_BY_UNIT
+}
+
+type PriceRequestAdditionnalCost {
+    id: ID!
+    type: AdditionnalCostType!
+    denomination: String
+    quantity: Int!
+    unit: AdditionnalCostUnit!
+    bestPrice: Float
+    priceRequestId: ID!
+    priceRequest: PriceRequest
+    supplierOfferAdditionnalCosts: [SupplierOfferAdditionnalCost!]!
+}
+
+input PriceRequestAdditionnalCostInput {
+    type: AdditionnalCostType!
+    denomination: String
+    quantity: Int!
+    unit: AdditionnalCostUnit!
+    priceRequestId: ID!
+}
+
+input PriceRequestAdditionnalCostUpdate {
+    id: ID
+    type: AdditionnalCostType
+    denomination: String
+    quantity: Int
+    unit: AdditionnalCostUnit
+}
+
+input PriceRequestAdditionnalCostInpdate {
+    id: ID
+    type: AdditionnalCostType
+    denomination: String
+    quantity: Int
+    unit: AdditionnalCostUnit
+    priceRequestId: ID
+}
+
+input PriceRequestAdditionnalCostFilter {
+    priceRequestId: ID
+}
+
+type Query {
+    priceRequestAdditionnalCost(id: ID!): PriceRequestAdditionnalCost
+    priceRequestAdditionnalCosts(filter: PriceRequestAdditionnalCostFilter): [PriceRequestAdditionnalCost!]!
+}
+
+type Mutation {
+    createPriceRequestAdditionnalCost(data: PriceRequestAdditionnalCostInput!): PriceRequestAdditionnalCost
+    updatePriceRequestAdditionnalCost(id: ID!, data: PriceRequestAdditionnalCostUpdate!): PriceRequestAdditionnalCost
+    deletePriceRequestAdditionnalCost(id: ID!): Boolean
+}

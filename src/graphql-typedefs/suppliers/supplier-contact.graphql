@@ -1,0 +1,45 @@
+type SupplierContact {
+    id: ID!
+    firstname: String
+    lastname: String!
+    phone: String
+    mail: String
+    function: String
+    isFavorite: Boolean!
+    language: String!
+    supplierId: ID!
+    supplier: Supplier
+}
+
+input SupplierContactInput {
+    firstname: String
+    lastname: String!
+    phone: String
+    mail: String
+    function: String
+    isFavorite: Boolean
+    language: String!
+    supplierId: ID!
+}
+
+input SupplierContactUpdate {
+    firstname: String
+    lastname: String
+    phone: String
+    mail: String
+    function: String
+    isFavorite: Boolean
+    language: String
+}
+
+type Query {
+    supplierContacts(supplierId: ID!): [SupplierContact!]!
+    supplierContact(id: ID!): SupplierContact
+}
+
+type Mutation {
+    createSupplierContact(data: SupplierContactInput!): SupplierContact
+    updateSupplierContact(id: ID!, data: SupplierContactUpdate!): SupplierContact
+    deleteSupplierContact(id: ID!): Boolean
+    setSupplierContactFavorite(id: ID!, supplierId: ID!): Boolean
+}

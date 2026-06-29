@@ -1,0 +1,87 @@
+enum SupplyListStatus {
+    OPEN,
+    TAKEN
+}
+
+enum SupplyListSource {
+    MANUAL,
+    TEKLA
+}
+
+type SupplyList {
+    id: ID!
+    description: String
+    model: String
+    source: SupplyListSource!
+    deliveryDate: Date
+    status: SupplyListStatus!
+    isAlreadyInBarset: Boolean!
+    projectId: ID!
+    priceRequestId: ID
+    createdAt: Date!
+    project: Project
+    elements: [SupplyListElement!]!
+    priceRequest: PriceRequest
+    parentSupplyCategories: [SupplyCategory!]!
+    infos: SupplyListInfos
+}
+
+type SupplyListInfos {
+    matterRefs: [String!]!
+    options: JSON
+}
+
+input SupplyListInput {
+    description: String
+    model: String
+    source: SupplyListSource!
+    deliveryDate: Date
+    status: SupplyListStatus
+    isAlreadyInBarset: Boolean
+    elements: [SupplyListElementInput!]
+}
+
+input SupplyListUpdate {
+    id: ID
+    description: String
+    model: String
+    source: SupplyListSource
+    deliveryDate: Date
+    status: SupplyListStatus
+    isAlreadyInBarset: Boolean
+    elements: [SupplyListElementUpdate!]
+}
+
+input SupplyListFilter {
+    projectId: ID
+    priceRequestId: ID
+    status: SupplyListStatus
+}
+
+enum SupplyListSortBy {
+    ID
+    DESCRIPTION
+    MODEL
+    SOURCE
+    DELIVERY_DATE
+    STATUS
+    CREATED_AT
+}
+
+input SupplyListSort {
+    sortBy: SupplyListSortBy!
+    sortDirection: OrderByDirection!
+}
+
+type Query {
+    supplyLists(filter: SupplyListFilter, sort: SupplyListSort): [SupplyList!]!
+    supplyList(id: ID!): SupplyList
+    canDissociateFromPriceRequest(id: ID!): Boolean
+}
+
+type Mutation {
+    deleteSupplyList(id: ID!): Boolean
+    deleteSupplyLists(ids: [ID!]!): Boolean
+    createSupplyList(data: SupplyListInput!, projectId: ID!): SupplyList
+    updateSupplyList(id: ID!, data: SupplyListUpdate!): SupplyList
+}

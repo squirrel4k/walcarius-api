@@ -1,0 +1,67 @@
+type Variant {
+    id: ID
+    reference: String
+    denomination: String
+    matterRef: String
+    quantity: Float!
+    weight: Float
+    format: String
+    isBlack: Boolean
+    isBlasted: Boolean
+    isPrimaryBlasted: Boolean
+    isCut: Boolean
+    isEn1090: Boolean
+    length: Float
+    width: Float
+    thickness: Float
+    quantityUnit: String
+    remark: String
+    supplyCategoryId: ID
+    matterId: ID
+    elementId: ID
+    supplyCategory: SupplyCategory
+    element: Element
+    matter: Matter
+    options: [VariantOption!]!
+    purchaseOrderQuantity: Int
+}
+
+input VariantInpdate {
+    id: ID
+    reference: String
+    denomination: String
+    matterRef: String
+    quantity: Float!
+    weight: Float
+    format: String
+    isBlack: Boolean
+    isBlasted: Boolean
+    isPrimaryBlasted: Boolean
+    isCut: Boolean
+    isEn1090: Boolean
+    length: Float
+    width: Float
+    thickness: Float
+    quantityUnit: String
+    remark: String
+    supplyCategoryId: ID
+    matterId: ID
+    elementId: ID
+    options: [VariantOptionInpdate!]!
+}
+
+input WeightData {
+    format: String
+    elementId: ID
+    matterId: ID!
+    supplyCategoryId: ID!
+    quantity: Int!
+    thickness: String
+    width: String
+    length: String
+}
+
+type Query {
+    variant(id: ID!): Variant
+    getVariantWeight(data: WeightData!): Float
+}

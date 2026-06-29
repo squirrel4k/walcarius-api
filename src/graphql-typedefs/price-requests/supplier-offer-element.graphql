@@ -1,0 +1,52 @@
+type SupplierOfferElement {
+    id: ID
+    price: Float
+    deliveryDate: Date
+    isSelected: Boolean!
+    selectedQuantity: Int
+    parentSupplierOfferElementId: ID
+    supplierOfferId: ID!
+    supplierOffer: SupplierOffer
+    priceRequestElementId: ID!
+    priceRequestElement: PriceRequestElement
+    variantId: ID
+    variant: Variant
+    options: [SupplierOfferElementOption!]!
+    computedPrice: Float
+    unit: OptionUnit
+}
+
+input SupplierOfferElementInpdate {
+    id: ID
+    price: Float
+    deliveryDate: Date
+    supplierOfferId: ID!
+    priceRequestElementId: ID!
+    priceRequestElement: PriceRequestElementUpdate
+    variantId: ID
+    variant: VariantInpdate
+    options: [SupplierOfferElementOptionInpdate!]!
+    unit: OptionUnit
+}
+
+input SupplierOfferElementUpdate {
+    selectedQuantity: Int
+    isSelected: Boolean
+    price: Float
+    deliveryDate: Date
+}
+
+input SupplierOfferElementAssociation {
+    supplierOfferId: ID!
+    associatedPriceRequestElementIds: [ID!]
+    deletedSupplierOfferElementIds: [ID!]
+}
+
+type Query {
+    supplierOfferElement(id: ID!): SupplierOfferElement
+}
+
+type Mutation {
+    updateSupplierOfferElement(id: ID!, data: SupplierOfferElementUpdate!): SupplierOfferElement
+    associateSupplierOfferElements(data: SupplierOfferElementAssociation!): [SupplierOfferElement!]!
+}

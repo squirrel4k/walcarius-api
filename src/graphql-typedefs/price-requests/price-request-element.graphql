@@ -1,0 +1,62 @@
+type PriceRequestElement {
+    id: ID!
+    remark: String
+    quantity: Float!
+    weight: Float
+    priceRequestId: ID!
+    priceRequest: PriceRequest
+    supplyListElementId: ID
+    supplyListElement: SupplyListElement
+    amalgamGroupId: ID
+    amalgamGroup: AmalgamGroup
+    bestPrice: Float
+    bestTime: Date
+    stockQuantity: Int
+    purchaseOrderQuantity: Int
+    hasPrice: Boolean
+    supplierOfferElements: [SupplierOfferElement!]!
+    parentSupplyCategory: SupplyCategory
+    options: [PriceRequestElementOption!]!
+    unit: OptionUnit
+}
+
+type PossiblePriceRequestElement {
+    id: ID!
+    remark: String
+    quantity: Float!
+    weight: Float
+    supplyListElementId: ID
+    supplyListElement: SupplyListElement
+    amalgamGroupId: ID
+    amalgamGroup: AmalgamGroup
+    supplierOfferElements: [SupplierOfferElement!]!
+    parentSupplyCategory: SupplyCategory
+    bestPrice: Float
+    bestTime: Date
+    stockQuantity: Int
+    purchaseOrderQuantity: Int
+    hasPrice: Boolean
+    isOrigin: Boolean
+    options: [PriceRequestElementOption!]!
+    unit: OptionUnit
+}
+
+input PriceRequestElementUpdate {
+    id: ID
+    remark: String
+    weight: Float
+    unit: OptionUnit
+}
+
+input PriceRequestElementFilter {
+    priceRequestId: ID!
+}
+
+type Query {
+    priceRequestElement(id: ID!): PriceRequestElement
+    priceRequestElements(filter: PriceRequestElementFilter!): [PriceRequestElement!]!
+}
+
+type Mutation {
+    updatePriceRequestElement(id: ID!, data: PriceRequestElementUpdate!): PriceRequestElement
+}

@@ -1,0 +1,12 @@
+{
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/**/*.resolver.ts",
+//    "src/app/auth/auth.controller.ts",
+    "src/app/price-requests/controllers/price-request.controller.ts",
+    "src/app/projects/controllers/project.controller.ts",
+    "src/app/quotes/controllers/quote.controller.ts",
+    "src/app/purchase-orders/controllers/purchase-order-element.controller.ts",
+    "src/app/purchase-orders/controllers/purchase-order.controller.ts",
+  ]
+}

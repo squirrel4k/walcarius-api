@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    font-size: 0.5rem;
+}
+
+table {
+    width: 100%;
+    text-align: left;
+}
+
+.detail {
+    margin-bottom: 0.5rem;
+    page-break-inside: avoid;
+}
+
+.el_ref{
+    width: 20%;
+}
+
+.el_matter{
+    width: 15%;
+}
+
+.el_process{
+    width: 20%;
+}
+
+.el_en{
+    width: 10%;
+}
+
+.el_length{
+    width: 10%;
+}
+
+.el_loss{
+    width: 10%;
+}
+
+.el_stock{
+    width: 15%;
+}
+
+table td {
+    border: 1px solid black;
+    padding: 0.2rem 0.2rem 0.3rem 0.2rem;
+}
+
+table th {
+    border: 1px solid black;
+    background-color: #d6d6d6;
+    text-align: center;
+}
+
+table, th, td, tr {
+    border-collapse: collapse; }
+
+.wrapper-cell {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 0;
+    margin: 0;
+}
+
+.wrapper-cell tr td:last-child, .wrapper-cell tr th:last-child {
+    border-right: none;
+}
+
+.wrapper-cell tr td:first-child, .wrapper-cell tr th:first-child {
+    border-left: none;
+}
+
+.wrapper-cell th {
+    border-top: none;
+    background-color: #ebebeb;
+}
+
+.wrapper-cell tr:last-child td {
+    border-bottom: none;
+}
+
+.wrapper-cell .space-cell {
+    border-top: none;
+    border-bottom: none;
+    width: 15%;
+    background-color: white;
+}
+
+.wrapper-cell .project {
+    width: 25%;
+}
+
+.wrapper-cell .supply {
+    width: 30%;
+}
+
+.wrapper-cell .position {
+    width: 15%;
+}
+
+.wrapper-cell .length {
+    width: 15%;
+}

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8">
+	<title>Price Request</title>
+	<link rel="stylesheet" href="http:<%= serverUrl %>css/price-requests.css">
+</head>
+
+<body>
+	<div class="container">
+		<div class="logo">
+			<img src="http:<%= serverUrl %>img/walcarius.png" alt="">
+		</div>
+		<hr>
+		<div class="info">
+			<div class="info-walca">
+				<p>Rue des Garennes 8</p>
+				<p>B-7700 Mouscron</p>
+				<p>Email : info@walcarius.be</p>
+				<p>Tel : +32 (0)56 48 15 15</p>
+				<p>Fax : +32 (0)56 48 15 10</p><br>
+
+				<p>T.V.A. BE 426.588.578</p>
+				<p>R.C.T 64.744</p>
+				<p>Enr. entr. 426.588.578.082311</p>
+			</div>
+			<div class="info-customer">
+				<div class="provider-case">
+					<%= supplierOffer && supplierOffer.supplier ? supplierOffer.supplier.name : "" %></div>
+				<div class="provider-case">
+					<span>
+						<%= translate("pdf.price_request.contact", lang) %>
+					</span>
+					<hr>
+					<span class="provider-case_content">
+						<% if (supplierOffer && supplierOffer.supplierContact) { %>
+							<%= supplierOffer.supplierContact.firstname %> <%= supplierOffer.supplierContact.lastname %>
+						<% } %>
+					</span>
+					<span class="provider-case_content">
+						<%= supplierOffer.supplierContact && supplierOffer.supplierContact.phone ?
+                    			supplierOffer.supplierContact.phone :
+								supplierOffer.supplier ? supplierOffer.supplier.phone : "" %>
+					</span>
+					<span class="provider-case_content">
+						<%= supplierOffer.supplierContact && supplierOffer.supplierContact.mail ?
+								supplierOffer.supplierContact.mail :
+								supplierOffer.supplier ? supplierOffer.supplier.mail : "" %>
+					</span>
+				</div>
+			</div>
+		</div>
+		<h4>
+			<%= translate("pdf.price_request.datum_label", lang) %> <%= displayDate(new Date(), "DD/MM/YYYY") %> 
+		</h4>
+		<div class="title">
+			<h1 class="title_content"><%= translate("pdf.price_request.name", lang) %> <%= supplierOffer ? supplierOffer.reference : "" %> </h1>
+		</div>
+		<div class="order">
+			<table>
+				<thead>
+					<tr>
+						<th class="size_ref"><%= translate("pdf.price_request.project", lang) %></th>
+						<th colspan="3" class="size_art"><%= translate("pdf.price_request.article", lang) %></th>
+						<th class="size_en1090"><%= translate("pdf.price_request.en1090", lang) %></th>
+						<th class="size_qua"><%= translate("pdf.price_request.quantity", lang) %></th>
+						<th class="size_pri"><%= translate("pdf.price_request.price", lang) %></th>
+						<th class="size_uni"><%= translate("pdf.price_request.unit", lang) %></th>
+					</tr>
+				</thead>
+				<tbody>
+					<% elements.forEach(function(element) { %>
+						<tr>
+							<td class="size_ref" rowspan="<%= 1 + element.options.length + (!!element.remark ? 1 : 0) %>">
+								<!-- Reference -->
+								<% if(element.supplyListElement) { %>
+									<%= element.supplyListElement.supplyList && element.supplyListElement.supplyList.project ? element.supplyListElement.supplyList.project.reference : "" %>
+								<% } else if (element.amalgamGroup && element.amalgamGroup.projectReferences) { %>
+									<%= element.amalgamGroup.projectReferences.join(", ") %>
+								<% } %>
+							</td>
+
+							<% if (getLineType(unitConfig, element) === PdfElementLineType.AMALGAMS) { %>
+								<td class="size_art__ref">
+									<!-- Article -->
+									<%= element.supplyListElement ? element.supplyListElement.denomination : element.amalgamGroup.reference %>
+								</td>
+								<td class="size_art__matter">
+									<!-- Matter -->
+									<% if ((element.supplyListElement && element.supplyListElement.matterRef) || (element.amalgamGroup && element.amalgamGroup.matterRef)) { %>
+										<%= element.supplyListElement ? element.supplyListElement.matterRef : element.amalgamGroup.matterRef %>
+									<% } %>
+								</td>
+								<td class="size_art__processing">
+									<!-- Black -->
+									<% if ((element.supplyListElement && element.supplyListElement.isBlack) || (element.amalgamGroup && element.amalgamGroup.isBlack)) { %>
+
+									<% } %>
+									<!-- Blasted -->
+									<% if ((element.supplyListElement && element.supplyListElement.isBlasted) || (element.amalgamGroup && element.amalgamGroup.isBlasted)) { %>
+										<%= translate("pdf.price_request.blasted", lang) %>
+									<% } %>
+									<!-- Primary Blasted -->
+									<% if ((element.supplyListElement && element.supplyListElement.isPrimaryBlasted) || (element.amalgamGroup && element.amalgamGroup.isPrimaryBlasted)) { %>
+										<%= translate("pdf.price_request.primary_blasted", lang) %>
+									<% } %>
+								</td>
+							<% } else if (getLineType(unitConfig, element) === PdfElementLineType.PLATES) { %>
+								<td class="size_art__plate" colspan="2">
+									<!-- Plate -->
+									<%= translate("pdf.price_request.plate", lang) %> 
+									<%= +element.supplyListElement.thickness %> x <%= +element.supplyListElement.length %> x <%= +element.supplyListElement.width %>
+								</td>
+								<td class="size_art__matter">
+									<!-- Matter -->
+									<%= element.supplyListElement ? element.supplyListElement.matterRef : "" %>
+								</td>
+							<% } else { %>
+								<td class="size_art" colspan="3">
+									<!-- Article -->
+									<%= element.supplyListElement ? element.supplyListElement.denomination : element.amalgamGroup.reference %>
+								</td>
+							<% } %>
+							<td class="size_en1090">
+								<% if ((element.supplyListElement && element.supplyListElement.supplyList && element.supplyListElement.supplyList.project && element.supplyListElement.supplyList.project.isEn1090)
+									|| (element.amalgamGroup && element.amalgamGroup.isEn1090)) { %>
+									X
+								<% } %>
+							</td>
+							<td class="size_qua">
+								<!-- Quantity -->
+								<%= +element.quantity %>
+								<!-- Format -->
+								<% if ((element.supplyListElement && element.supplyListElement.format) || (element.amalgamGroup && element.amalgamGroup.format)) { %>
+									x <%= element.supplyListElement ? element.supplyListElement.format : formatLength(element.amalgamGroup.format) %>
+								<% } %>
+								<!-- Quantity unit -->
+								<% if (getLineType(unitConfig, element) !== PdfElementLineType.AMALGAMS) { %>
+									<%= !!element.supplyListElement && !!element.supplyListElement.quantityUnit ? formatQuantityUnit(element.supplyListElement.quantityUnit, lang) : "" %>
+								<% } %>								
+							</td>
+							<td class="size_pri">
+								<!-- Price -->
+								<!-- Nothing yet, we're asking the price -->
+							</td>
+							<td class="size_uni">
+								<!-- Unit -->
+								<%= formatUnit(unitConfig, element) %>
+							</td>
+						</tr>
+						<% if (element.options && element.options.length > 0) { %>
+							<% element.options.forEach(function (option) { %>
+								<tr>
+									<td colspan="4" class="size_option">
+										<strong>
+										<% if (option.type == "PROCESSING") { %>
+											<%= translate("pdf.price_request.processing", lang) %> <%= option.denomination ? " - " + option.denomination : "" %>
+										<% } else if (option.type == "CUT") { %>
+											<%= translate("pdf.price_request.cut", lang) %>
+										<% } else { %>
+											<%= translate("pdf.price_request.other", lang) %> <%= option.denomination ? " - " + option.denomination : "" %>
+										<% } %>
+										</strong>
+									</td>
+									<td class="size_qua">
+										<%= option.quantity ? option.quantity : 1 %>
+									</td>
+									<td class="size_pri">
+										
+									</td>
+									<td class="size_uni">
+										<% if (option.unit == "EURO") { %>
+											€
+										<% } else if (option.unit == "EURO_BY_UNIT") { %>
+											€ / u
+										<% } else if (option.unit == "EURO_BY_TON") { %>
+											€ / T
+										<% } else if (option.unit == "EURO_BY_METER") { %>
+											€ / m
+										<% } else if (option.unit == "EURO_BY_SQUARE_METER") { %>
+											€ / m²
+										<% } %>
+									</td>
+								</tr>
+							<% }); %>
+						<% } %>
+						<% if (!!element.remark) { %>
+							<tr>
+								<td colspan="7"><strong><%= translate("pdf.price_request.remark", lang)%> :</strong> <%= element.remark %></td>
+							</tr>
+						<% } %>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+		<% if (supplierOffer && supplierOffer.priceRequest && supplierOffer.priceRequest.additionnalCosts && supplierOffer.priceRequest.additionnalCosts.length > 0) { %>
+			<h4><%= translate("pdf.price_request.additionnal_costs", lang) %></h4>
+			<div class="order">
+				<table>
+					<thead>
+						<tr>
+							<th class="size_ac_qty"><%= translate("pdf.price_request.quantity", lang) %></th>
+							<th class="size_ac_typ"><%= translate("pdf.price_request.type", lang) %></th>
+							<th class="size_ac_den"><%= translate("pdf.price_request.denomination", lang) %></th>
+							<th class="size_ac_pri"><%= translate("pdf.price_request.price", lang) %></th>
+							<th class="size_ac_uni"><%= translate("pdf.price_request.unit", lang) %></th>
+						</tr>
+					</thead>
+					<tbody>
+						<% supplierOffer.priceRequest.additionnalCosts.forEach(function(cost) { %>
+							<tr>
+								<td class="size_ac_qty">
+									<!-- Quantity -->
+									<%= cost.quantity ? cost.quantity : 1 %>
+								</td>
+								<td class="size_ac_typ">
+									<!-- Type -->
+									<% if (cost.type == "TRANSPORT_FEE") { %>
+										<%= translate("pdf.price_request.transport_fee", lang) %>
+									<% } else if (cost.type == "PACKAGING_FEE") { %>
+										<%= translate("pdf.price_request.packaging_fee", lang) %>
+									<% } else if (cost.type == "CERTIFICATE_FEE") { %>
+										<%= translate("pdf.price_request.certificate_fee", lang) %>
+									<% } else if (cost.type == "OTHER") { %>
+										<%= translate("pdf.price_request.other", lang) %>
+									<% } %>
+								</td>
+								<td class="size_ac_den">
+									<!-- Denomination -->
+									<%= cost.denomination ? cost.denomination : "" %>
+								</td>
+								<td class="size_ac_pri">
+									<!-- Price -->
+									<!-- Nothing yet, we're asking the price -->
+								</td>
+								<td class="size_ac_uni">
+									<!-- Unit -->
+									<% if (cost.unit == "EURO") { %>
+										€
+									<% } else if (cost.unit == "EURO_BY_UNIT") { %>
+										€/u
+									<% } %>
+								</td>
+							</tr>
+						<% }) %>
+					</tbody>
+				</table>
+			</div>
+		<% } %>
+		<% if (supplierOffer && supplierOffer.priceRequest && supplierOffer.priceRequest.remark) { %>
+			<div class="remarks">
+				<h4><%= translate("pdf.price_request.remark", lang) %></h4>
+				<p><%= supplierOffer.priceRequest.remark %><p>
+			</div>
+		<% } %>
+		<div class="remarks">
+			<h4><%= translate("pdf.price_request.order_conditions_title", lang) %></h4>
+			<p class="order_conditions_content">
+				<% translate("pdf.purchase_order.order_conditions_content", lang).split("\n").forEach(function(line) { %>
+					<%= line %><br/>
+				<% }) %>
+        <% translate("pdf.purchase_order.order_conditions_content_2", lang).split("\n").forEach(function(line) { %>
+					<%= line %>
+				<% }) %>
+			</p>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Reset password</title>
+    </head>
+    <body>
+        <h3>Hi <%= user.firstName && user.lastName ? user.firstName + " " + user.lastName : user.login %>,</h3>
+        <p>
+            To reset your password, use this <a href="<%= url %>">link</a>. This link will expire in 24h.
+        </p>
+        <p>
+            If you didn't ask for this reset, please ignore this mail.
+        </p>
+    </body>
+</html>

@@ -1,0 +1,28 @@
+type Query {
+    getPermission(userGroup: String!): [IPermission]
+    getOnePermission(userGroup: String!, category: String!): [IPermission]
+}
+
+type Mutation{
+    updatePermission(permission: UpdatePermission!, id: Int!): IPermission
+}
+
+type IPermission {
+    id: Int
+    userGroup: String
+    category: String
+    read: Boolean
+    write: Boolean
+    delete: Boolean
+    seePrices: Boolean
+}
+
+input UpdatePermission {
+    id: Int
+    userGroup: String
+    category: String
+    read: Boolean
+    write: Boolean
+    delete: Boolean
+    seePrices: Boolean
+}

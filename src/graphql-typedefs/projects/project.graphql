@@ -1,0 +1,33 @@
+type Project {
+    id: ID!
+    reference: String!
+    isEn1090: Boolean!
+    supplyLists: [SupplyList!]!
+    createdAt: Date!
+    purchaseOrders: [PurchaseOrder!]!
+    totalSupplyListQty: Int!
+    unusedSupplyListQty: Int!
+}
+
+input ProjectInput {
+    reference: String!
+    isEn1090: Boolean!
+    supplyLists: [SupplyListInput!]
+}
+
+input ProjectUpdate {
+    reference: String
+    isEn1090: Boolean
+}
+
+type Query {
+    projects(search: String, pagination: Pagination): [Project!]!
+    project(id: ID!): Project
+    projectsByReference(reference: String): Project
+}
+
+type Mutation {
+    createProject(data: ProjectInput!): Project
+    deleteProject(id: ID!): Boolean
+    updateProject(id: ID!, data: ProjectUpdate!): Project
+}

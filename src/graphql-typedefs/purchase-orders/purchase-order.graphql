@@ -1,0 +1,126 @@
+type PurchaseOrder {
+    id: ID!
+    reference: String!
+    status: PurchaseOrderStatus
+    isSent: Boolean!
+    sendingDate: Date
+    remark: String
+    projectId: ID
+    project: Project
+    supplierId: ID
+    supplier: Supplier
+    supplierContactId: ID
+    supplierContact: SupplierContact
+    priceRequestId: ID
+    priceRequest: PriceRequest
+    userId: ID
+    user: User
+    createdAt: Date!
+    deletedAt: Date
+    additionnalCosts: [PurchaseOrderAdditionnalCost!]!
+    elements: [PurchaseOrderElement!]!
+    linkedProjects: [Project!]!
+    totalPrice: Float
+    totalAdditionnalCosts: Float
+    internalRemark: String
+    scanPdfs: [ScanPdf]
+}
+
+enum PurchaseOrderStatus {
+    CREATED,
+    SENT,
+    CANCELLED
+}
+
+input PurchaseOrderFilter {
+    reference: String
+    status: PurchaseOrderStatus
+    createdAt: Date
+}
+
+enum PurchaseOrderSortBy {
+    ID
+    REFERENCE
+    SUPPLIER
+    CREATED_AT
+    PRICE_REQUEST
+    STATUS
+    REMARK
+    USER
+}
+
+input PurchaseOrderSort {
+    sortBy: PurchaseOrderSortBy!
+    sortDirection: OrderByDirection!
+}
+
+input ScanPdfInput {
+    name: String
+    url: String
+}
+
+input PurchaseOrderFromProjectInput {
+    reference: String!
+    remark: String
+    projectId: ID!
+    supplierId: ID!
+    internalRemark: String
+    price: Float
+    scanPdfs: [ScanPdfInput]
+}
+
+input PurchaseOrderFromSupplierOfferInput {
+    supplierOfferId: ID!
+    elements: [POSupplierOfferElementInput!]!
+    additionnalCosts: [POSupplierOfferAdditionnalCostInput!]
+}
+
+"Muse define either priceRequestElementId OR supplierOfferElementId"
+input POSupplierOfferElementInput {
+    "This OR supplierOfferElementId must be defined"
+    priceRequestElementId: ID
+    "This OR priceRequestElementId must be defined"
+    supplierOfferElementId: ID
+    quantity: Int!
+}
+
+"Must define either priceRequestAdditionnalCostId OR supplierOfferAdditionnalCostId"
+input POSupplierOfferAdditionnalCostInput {
+    "This OR supplierOfferAdditionnalCostId must be defined"
+    priceRequestAdditionnalCostId: ID
+    "This OR priceRequestAdditionnalCostId must be defined"
+    supplierOfferAdditionnalCostId: ID
+    quantity: Int
+    price: Float
+}
+
+input PurchaseOrderUpdate {
+    status: PurchaseOrderStatus
+    remark: String
+    projectId: ID
+    supplierId: ID
+    supplierContactId: ID
+    internalRemark: String
+}
+
+input AddScanPdfInput {
+    originalname: String
+    filename: String
+    path: String
+}
+
+type Query {
+    purchaseOrder(id: ID!): PurchaseOrder
+    purchaseOrders(search: String, sort: PurchaseOrderSort, pagination: Pagination): [PurchaseOrder!]!
+    getPurchaseOrderReference: String!
+    purchaseOrdersByProject(projectId: ID!, pagination: Pagination): [PurchaseOrder!]!
+}
+
+type Mutation {
+    createPurchaseOrderFromProject(data: PurchaseOrderFromProjectInput!, scanData: [AddScanPdfInput!]): PurchaseOrder
+    createPurchaseOrderFromSupplierOffer(data: [PurchaseOrderFromSupplierOfferInput!]!): [PurchaseOrder!]!
+    freePurchaseOrderReference: Boolean!
+    deletePurchaseOrder(id: ID!): Boolean
+    updatePurchaseOrder(id: ID!, data: PurchaseOrderUpdate!): PurchaseOrder
+    sendPurchaseOrderMail(id: ID!): Boolean
+}

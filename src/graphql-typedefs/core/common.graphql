@@ -1,0 +1,12 @@
+scalar JSON
+scalar Date
+
+enum OrderByDirection {
+    ASC
+    DESC
+}
+
+input Pagination {
+    page: Int!
+    limit: Int!
+}
