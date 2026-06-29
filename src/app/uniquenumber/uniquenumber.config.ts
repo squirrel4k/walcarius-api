@@ -6,7 +6,7 @@ export const NUMBER_CONFIG: { [numberType: number]: UniqueNumberConfiguration } 
         fieldName: "number",
         yearlyRAZ: true,
         monthlyRAZ: false,
-        wildcard: WILDCARD_TYPE.MONGO,
+        wildcard: WILDCARD_TYPE.MYSQL,
     },
     [NUMBER_TYPE.PRICE_REQUEST]: {
         format: "DPYYYY-xxxx",

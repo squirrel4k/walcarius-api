@@ -1,45 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { LoaderMongo } from "../../../core/dataloader/mongo/mongo.loader";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
-import { LoaderManager } from "../../../core/dataloader/loader.manager";
-import { Quote } from "../interfaces/quote.interface";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, IsNull } from "typeorm";
+import { QuoteEntity } from "../entities/quote.entity";
+import { OneToManySqlLoader } from "../../../core/dataloader/sql/otm-sql.loader";
 
 @Injectable()
-export class QuoteByQuoteProjectLoader {
+export class QuoteByQuoteProjectLoader extends OneToManySqlLoader<QuoteEntity> {
 
-    public readonly name: string;
-
-    public constructor (
-        @InjectModel("quotes") private readonly _quoteModel: Model<Quote>
+    public constructor(
+        @InjectRepository(QuoteEntity) repo: Repository<QuoteEntity>
     ) {
-        this.name = "quotesByQuoteProjects";
-    }
-
-    public get(uuid: string): LoaderMongo<Quote[]> {
-        let loader = LoaderManager.Mngr.get<LoaderMongo<Quote[]>>(uuid, this.name);
-
-        if (!loader) {
-            loader = LoaderMongo.Create(this.name, this.findByIds.bind(this));
-            LoaderManager.Mngr.set(uuid, loader);
-        }
-
-        return loader;
-    }
-
-    private async findByIds(ids: string[]): Promise<Quote[][]> {
-        if (!ids || ids.length == 0) { return []; }
-
-        // Aggregation stages preparation
-        const objIds: Types.ObjectId[] = ids.map(id => Types.ObjectId(id));
-        const match = { "$match": {
-            "projectId": { "$in": objIds },
-            "deletedAt": { "$not": { "$gt" : 0 } }
-        } };
-        const sort = { "$sort": { "updatedAt": 1 } };
-
-        const quotes = await this._quoteModel.aggregate([match, sort]);
-
-        return ids.map(id => quotes.filter(quote => quote.projectId.toString() == id));
+        super(repo, "quotesByQuoteProjects", "projectId", {
+            where: { deletedAt: IsNull() },
+            order: { updatedAt: "ASC" }
+        });
     }
 }

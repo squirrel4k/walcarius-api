@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 // ---- IMPORTS ----
-import { MongooseModule } from "@nestjs/mongoose";
 import { GraphQLModule } from "@nestjs/graphql";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PassportModule } from "@nestjs/passport";
@@ -42,14 +41,6 @@ import { FileController } from "./files/files.controllers";
 
 @Module({
   imports: [
-    MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: process.env.WAL_MONGO_URI,
-        dbName: process.env.WAL_MONGO_DBNAME,
-        useNewUrlParser: true,
-        useFindAndModify: false
-      })
-    }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: "mysql",

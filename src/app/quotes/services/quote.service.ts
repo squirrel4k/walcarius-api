@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Quote, SortQuote, InputQuote, UpdateQuote, QuoteElement, QuoteSortBy, DisplayQuote } from "../interfaces/quote.interface";
-import { Model } from "mongoose";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { QuoteEntity } from "../entities/quote.entity";
+import { Quote, SortQuote, InputQuote, UpdateQuote, DisplayQuote, QuoteSortBy } from "../interfaces/quote.interface";
 import { QuoteProjectService } from "./quote-project.service";
 import { Pagination } from "../../../core/interfaces/crud.interface";
 import { QuoteProject } from "../interfaces/quote-project.interface";
@@ -10,311 +11,301 @@ import { QuoteLoader } from "../loaders/quote.loader";
 import { QuoteByQuoteProjectLoader } from "../loaders/quote-by-quote-project.loader";
 import { ErrorUtil } from "../../../core/utils/error.util";
 import { StringUtil } from "../../../core/utils/string.util";
-import { DisplayQuoteByQuoteProjectLoader } from "../loaders/display-quote-by-quote-project.loader";
 
 @Injectable()
 export class QuoteService {
 
     public constructor(
-        @InjectModel("quotes") private readonly _quoteModel: Model<Quote>,
+        @InjectRepository(QuoteEntity)
+        private readonly _quoteRepo: Repository<QuoteEntity>,
         private readonly _quoteProjectSrv: QuoteProjectService,
         private readonly _quoteLoader: QuoteLoader,
         private readonly _quoteByQuoteProjectLoader: QuoteByQuoteProjectLoader,
-        private readonly _displayQuoteByQuoteProjectLoader: DisplayQuoteByQuoteProjectLoader
     ) { }
 
-    /**
-     * @description Get last quoteNumber from database
-     * @author Quentin Wolfs
-     * @param {string} search
-     * @returns {Promise<string>}
-     * @memberof QuoteService
-     */
     public async getLastQuoteNumber(search: string): Promise<string> {
         try {
-            const match = { "$match": { "number": { "$regex": search } } };
-            const sort = { "$sort": { "number": -1 } };
-            const limit = { "$limit": 1 };
-
-            const lastQuote = await this._quoteModel.aggregate([match, sort, limit]);
-            return lastQuote.map(quote => quote.number).pop();
+            // search uses MYSQL wildcard '_' (single char), convert to LIKE pattern
+            const likePattern = search.replace(/_/g, "_");
+            const result = await this._quoteRepo
+                .createQueryBuilder("q")
+                .select("q.number")
+                .where("q.number LIKE :pattern", { pattern: likePattern })
+                .orderBy("q.number", "DESC")
+                .limit(1)
+                .getOne();
+            return result ? result.number : null;
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Get a list of quotes by their ids
-     * @author Quentin Wolfs
-     * @param {string[]} ids
-     * @param {string} uuid
-     * @returns {Promise<Quote[]>}
-     * @memberof QuoteService
-     */
     public async getByIds(ids: string[], uuid: string): Promise<Quote[]> {
         try {
-            return this._quoteLoader.get(uuid).load(ids);
+            const numIds = ids.map(id => parseInt(id, 10));
+            return (await this._quoteLoader.get(uuid).load(numIds)).map(e => this._toInterface(e));
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Lists available Quotes matching a search pattern
-     * @author Quentin Wolfs
-     * @param {Pagination} pagination
-     * @param {SortQuote} sort
-     * @param {string} search
-     * @param {string} uuid
-     * @returns {Promise<Quote[]>}
-     * @memberof QuoteService
-     */
     public async list(pagination: Pagination, sort: SortQuote, search: string, uuid: string): Promise<Quote[]> {
         try {
-            const ids = await this.searchIds(search ? search : "", sort);
+            const ids = await this.searchIds(search, sort);
             const usedIds = ids.slice((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit);
-            if (usedIds.length == 0) { return []; }
-
-            // return this._quoteLoader.get(uuid).load(usedIds);
-            return this._quoteLoader.get(uuid).load(usedIds);
+            if (usedIds.length === 0) { return []; }
+            const entities = await this._quoteLoader.get(uuid).load(usedIds);
+            return (entities as QuoteEntity[]).map(e => this._toInterface(e));
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Get a quote by its id
-     * @author Quentin
-     * @param {string} _id
-     * @param {string} uuid
-     * @returns {Promise<Quote>}
-     * @memberof QuoteService
-     */
     public async getById(_id: string, uuid: string): Promise<Quote> {
         try {
-            return this._quoteLoader.get(uuid).load(_id);
+            const entity = await this._quoteLoader.get(uuid).load(parseInt(_id, 10));
+            return entity ? this._toInterface(entity as QuoteEntity) : null;
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Create a new quote
-     * @author Quentin
-     * @param {InputQuote} quote
-     * @returns {Promise<Quote>}
-     * @memberof QuoteService
-     */
     public async create(quote: InputQuote): Promise<Quote> {
         try {
-            if (!quote.createdAt) { quote.createdAt = new Date().getTimeSeconds(); }
-            quote.updatedAt = quote.createdAt;
-
-            return await this._quoteModel.create(quote);
+            const now = new Date().getTimeSeconds();
+            const entity = this._quoteRepo.create({
+                name: quote.name,
+                number: quote.number,
+                reference: quote.reference,
+                isEn1090: quote.isEn1090,
+                projectId: parseInt(quote.projectId, 10),
+                status: quote.status as number || 0,
+                needSandblasting: quote.needSandblasting || false,
+                needMetallization: quote.needMetallization || false,
+                needLacquering: quote.needLacquering || false,
+                needPainting: quote.needPainting || false,
+                needGalvanization: quote.needGalvanization || false,
+                remarks: quote.remarks,
+                totalPrice: quote.totalPrice,
+                elements: quote.elements || [],
+                createdAt: quote.createdAt || now,
+                updatedAt: now,
+            });
+            const saved = await this._quoteRepo.save(entity);
+            return this._toInterface(saved);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Updates an existing quote
-     * @author Quentin
-     * @param {UpdateQuote} quote
-     * @param {string} _id
-     * @returns {Promise<Quote>}
-     * @memberof QuoteService
-     */
     public async update(quote: UpdateQuote, _id: string): Promise<Quote> {
         try {
-            quote.updatedAt = new Date().getTimeSeconds();
-            return await this._quoteModel.findOneAndUpdate({ _id }, quote, { "new": true });
+            const id = parseInt(_id, 10);
+            await this._quoteRepo.update(id, {
+                name: quote.name,
+                number: quote.number,
+                reference: quote.reference,
+                isEn1090: quote.isEn1090,
+                projectId: quote.projectId ? parseInt(quote.projectId, 10) : undefined,
+                needSandblasting: quote.needSandblasting,
+                needMetallization: quote.needMetallization,
+                needLacquering: quote.needLacquering,
+                needPainting: quote.needPainting,
+                needGalvanization: quote.needGalvanization,
+                remarks: quote.remarks,
+                totalPrice: quote.totalPrice,
+                elements: quote.elements || [],
+                updatedAt: new Date().getTimeSeconds(),
+            });
+            const updated = await this._quoteRepo.findOne(id);
+            return this._toInterface(updated);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Delete (by default : softly) a Quote
-     * @author Quentin
-     * @param {string} _id
-     * @param {boolean} [hard]
-     * @returns {Promise<boolean>}
-     * @memberof QuoteService
-     */
     public async delete(_id: string, hard?: boolean): Promise<boolean> {
         try {
+            const id = parseInt(_id, 10);
             if (hard) {
-                return await this._quoteModel.deleteOne({ _id });
+                const result = await this._quoteRepo.delete(id);
+                return result.affected > 0;
             } else {
-                const deleted = await this._quoteModel.findOneAndUpdate(
-                    { _id }, { "deletedAt": new Date().getTimeSeconds() }, { "new": true }
-                );
-
-                return deleted.deletedAt != 0;
+                await this._quoteRepo.update(id, { deletedAt: new Date().getTimeSeconds() });
+                return true;
             }
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Returns the quotes linked to a project
-     * @author Quentin
-     * @param {string} projectId
-     * @param {string} uuid
-     * @returns {Promise<Quote[]>}
-     * @memberof QuoteService
-     */
     public async getQuotesOfProject(projectId: string, uuid: string): Promise<Quote[]> {
         try {
-            return this._quoteByQuoteProjectLoader.get(uuid).load(projectId);
+            const entities = await this._quoteByQuoteProjectLoader.get(uuid).load(parseInt(projectId, 10));
+            return (entities as QuoteEntity[]).map(e => this._toInterface(e));
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Search for quotes ids matching the pattern
-     * @author Quentin
-     * @param {string} search
-     * @param {SortQuote} sortParams
-     * @returns {Promise<string[]>}
-     * @memberof QuoteService
-     */
-    public async searchIds(search: string, sortParams: SortQuote): Promise<string[]> {
+    public async searchIds(search: string, sortParams: SortQuote): Promise<number[]> {
         try {
-            const list = await this._quoteModel.aggregate(this.getListAggregateStages(search, sortParams));
-            if (list.length == 0) { return []; }
+            const qb = this._quoteRepo
+                .createQueryBuilder("q")
+                .select("q.id", "id")
+                .where("q.deletedAt IS NULL");
 
-            return list.map(quote => quote._id.toString());
+            if (search && search.length > 0) {
+                const pattern = `%${StringUtil.escapeRegex(search)}%`;
+                qb.leftJoin("quote_projects", "qp", "qp.id = q.projectId")
+                  .andWhere(
+                    "(q.name LIKE :pattern OR q.reference LIKE :pattern OR q.number LIKE :pattern" +
+                    " OR qp.name LIKE :pattern OR qp.reference LIKE :pattern OR qp.customer LIKE :pattern)",
+                    { pattern }
+                  );
+            }
+
+            if (sortParams && sortParams.sortBy !== undefined) {
+                const col = QuoteSortBy[sortParams.sortBy] || "createdAt";
+                qb.orderBy(`q.${col}`, sortParams.sortDirection === "ASC" ? "ASC" : "DESC");
+            }
+
+            const rows = await qb.getRawMany();
+            return rows.map(r => r.id);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Returns the aggregation stages of the list
-     * @author Quentin
-     * @private
-     * @param {string} search
-     * @param {SortQuote} sortParams
-     * @returns
-     * @memberof QuoteService
-     */
-    private getListAggregateStages(search: string, sortParams: SortQuote, pagination?: Pagination, forDisplay?: boolean) {
-        const stages = [];
-        if (!!search && search.length > 0) {
-            const regex = new RegExp(`.*${StringUtil.escapeRegex(search)}.*`, "i");
-            // Join projects collection
-            stages.push({ "$lookup": {
-                from: "projects",
-                localField: "projectId",
-                foreignField: "_id",
-                as: "project"
-            } });
-            // Unwind project to access its values
-            stages.push({ $unwind: "$project" });
-            // Match regex in different searched fields
-            stages.push({ $match: {
-                $or: [
-                    { "name": { $regex: regex } },
-                    { "reference": { $regex: regex } },
-                    { "number": { $regex:  regex } },
-                    { "project.name": { $regex: regex } },
-                    { "project.reference": { $regex: regex } },
-                    { "project.customer": { $regex: regex } },
-                ],
-                "deletedAt": { $not: { $gt : 0 } }
-            } });
-            if (forDisplay) {
-                // Restrict returned fields to only have displayed fields
-                stages.push({ $project: {
-                    "_id": 1,
-                    "name": 1,
-                    "number": 1,
-                    "reference": 1,
-                    "isEn1090": 1,
-                    "createdAt": 1,
-                    "projectId": 1
-                } });
-            }
-        }
-        if (sortParams) {
-            stages.push({ $sort: { [QuoteSortBy[sortParams.sortBy]]: sortParams.sortDirection == "ASC" ? 1 : -1 } });
-        }
-        if (!!pagination && !!pagination.page && !!pagination.limit) {
-            stages.push({ $skip: (pagination.page - 1) * pagination.limit });
-            stages.push({ $limit: pagination.limit });
-        }
-
-        return stages;
-    }
-
-    /**
-     * @description Duplicate an existing quote and assign a selected quote number
-     * @author Quentin Wolfs
-     * @param {string} _id
-     * @param {string} newNumber
-     * @param {string} uuid
-     * @returns {Promise<Quote>}
-     * @memberof QuoteService
-     */
     public async duplicate(_id: string, newNumber: string, uuid: string): Promise<Quote> {
         try {
             const baseQuote = await this.getById(_id, uuid);
-            delete baseQuote._id;
-            baseQuote.number = newNumber;
-
-            return await this.create(baseQuote);
+            const input: InputQuote = {
+                name: baseQuote.name,
+                number: newNumber,
+                reference: baseQuote.reference,
+                isEn1090: baseQuote.isEn1090,
+                projectId: baseQuote.projectId,
+                status: baseQuote.status,
+                needSandblasting: baseQuote.needSandblasting,
+                needMetallization: baseQuote.needMetallization,
+                needLacquering: baseQuote.needLacquering,
+                needPainting: baseQuote.needPainting,
+                needGalvanization: baseQuote.needGalvanization,
+                remarks: baseQuote.remarks,
+                totalPrice: baseQuote.totalPrice,
+                elements: baseQuote.elements as any,
+            };
+            return this.create(input);
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /******************
-     *    PDF DATA    *
-     ******************/
-
-     /**
-     * @description Generate the data for the work_resume pdf
-     * @author Quentin Wolfs
-     * @param {string} _id
-     * @param {string} uuid
-     * @returns {Promise<{ quote: Quote, resume: { [className: string]: number }}>}
-     * @memberof QuoteService
-     */
-    public async getWorkResumeData(_id: string, uuid: string): Promise<{ quote: Quote, resume: { [className: string]: number }}> {
+    public async getWorkResumeData(_id: string, uuid: string): Promise<{ quote: Quote, resume: { [className: string]: number } }> {
         try {
             const quote: Quote = await this.getById(_id, uuid);
             const project: QuoteProject = await this._quoteProjectSrv.getById(quote.projectId, uuid);
             quote.project = project;
-
-            return { quote: quote, resume: this.sortQuoteByWorkType(quote) };
+            return { quote, resume: this.sortQuoteByWorkType(quote) };
         } catch (e) {
             throw ErrorUtil.get(e);
         }
     }
 
-    /**
-     * @description Sorts & filter the quoteElements to have the price by each work type
-     * @author Quentin Wolfs
-     * @private
-     * @param {Quote} quote
-     * @returns {{ [className: string]: number }}
-     * @memberof QuoteService
-     */
+    public async getDisplayQuotesByProject(quoteProjectId: string, uuid: string): Promise<DisplayQuote[]> {
+        try {
+            const entities = await this._quoteByQuoteProjectLoader.get(uuid).load(parseInt(quoteProjectId, 10));
+            return (entities as QuoteEntity[]).map(e => ({
+                _id: e._id,
+                name: e.name,
+                number: e.number,
+                reference: e.reference,
+                isEn1090: e.isEn1090,
+                projectId: e.projectId?.toString(),
+            }));
+        } catch (e) {
+            throw ErrorUtil.get(e);
+        }
+    }
+
+    public async displayedList(pagination: Pagination, sort: SortQuote, search: string): Promise<DisplayQuote[]> {
+        try {
+            const qb = this._quoteRepo
+                .createQueryBuilder("q")
+                .select(["q.id", "q.name", "q.number", "q.reference", "q.isEn1090", "q.projectId", "q.createdAt"])
+                .where("q.deletedAt IS NULL");
+
+            if (search && search.length > 0) {
+                const pattern = `%${StringUtil.escapeRegex(search)}%`;
+                qb.leftJoin("quote_projects", "qp", "qp.id = q.projectId")
+                  .andWhere(
+                    "(q.name LIKE :pattern OR q.reference LIKE :pattern OR q.number LIKE :pattern" +
+                    " OR qp.name LIKE :pattern OR qp.reference LIKE :pattern OR qp.customer LIKE :pattern)",
+                    { pattern }
+                  );
+            }
+
+            if (sort && sort.sortBy !== undefined) {
+                const col = QuoteSortBy[sort.sortBy] || "createdAt";
+                qb.orderBy(`q.${col}`, sort.sortDirection === "ASC" ? "ASC" : "DESC");
+            }
+
+            if (pagination && pagination.page && pagination.limit) {
+                qb.skip((pagination.page - 1) * pagination.limit).take(pagination.limit);
+            }
+
+            const results = await qb.getMany();
+            return results.map(e => ({
+                _id: e._id,
+                name: e.name,
+                number: e.number,
+                reference: e.reference,
+                isEn1090: e.isEn1090,
+                projectId: e.projectId?.toString(),
+            }));
+        } catch (e) {
+            throw ErrorUtil.get(e);
+        }
+    }
+
+    private _toInterface(entity: QuoteEntity): Quote {
+        return {
+            _id: entity._id,
+            id: entity._id,
+            name: entity.name,
+            number: entity.number,
+            reference: entity.reference,
+            isEn1090: entity.isEn1090,
+            projectId: entity.projectId?.toString(),
+            status: entity.status,
+            needSandblasting: entity.needSandblasting,
+            needMetallization: entity.needMetallization,
+            needLacquering: entity.needLacquering,
+            needPainting: entity.needPainting,
+            needGalvanization: entity.needGalvanization,
+            remarks: entity.remarks,
+            totalPrice: entity.totalPrice,
+            elements: entity.elements,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt,
+            deletedAt: entity.deletedAt,
+            project: null,
+        } as any;
+    }
+
     private sortQuoteByWorkType(quote: Quote): { [className: string]: number } {
         let key: string;
         let resume: { [className: string]: number } = {};
         RESUME_FIELDS.forEach(field => resume[field] = 0);
 
         if (quote.elements && quote.elements.length > 0) {
-            quote.elements.forEach(element => {
+            quote.elements.forEach((element: any) => {
                 key = element.useClass;
-                if (RESUME_FIELDS.indexOf(key) != -1) {
+                if (RESUME_FIELDS.indexOf(key) !== -1) {
                     resume[key] += element.quantity * element.unitPrice;
                 }
-                if (element.children.length > 0) {
+                if (element.children && element.children.length > 0) {
                     resume = this.computeChildren(resume, element);
                 }
             });
@@ -323,107 +314,38 @@ export class QuoteService {
         return resume;
     }
 
-    /**
-     * @description Compute a children QuoteElement
-     * @author Quentin Wolfs
-     * @private
-     * @param {{ [ className: string ]: number }} resume
-     * @param {QuoteElement} element
-     * @returns {{ [className: string]: number }}
-     * @memberof QuoteService
-     */
-    private computeChildren(resume: { [ className: string ]: number }, element: QuoteElement): { [className: string]: number } {
-        element.children.forEach(child => {
+    private computeChildren(resume: { [className: string]: number }, element: any): { [className: string]: number } {
+        element.children.forEach((child: any) => {
             if (child.additionalComputings && child.additionalComputings.length > 0) {
-                // Custom element
                 resume = this.computeCustom(resume, element.quantity, child);
             } else {
-                // Operation / Assemblage
                 resume = this.computeManipulations(resume, element.quantity, child);
             }
         });
-
         return resume;
     }
 
-    /**
-     * @description Compute a Custom element
-     * @author Quentin Wolfs
-     * @private
-     * @param {{ [className: string]: number }} resume
-     * @param {number} elementQuantity
-     * @param {QuoteElement} custom
-     * @returns {{ [className: string]: number }}
-     * @memberof QuoteService
-     */
-    private computeCustom(resume: { [className: string]: number }, elementQuantity: number, custom: QuoteElement): { [className: string]: number } {
-        let key: string;
-        if (custom.useClass == "Equerre" && custom.content && custom.content.properties) {
+    private computeCustom(resume: { [className: string]: number }, elementQuantity: number, custom: any): { [className: string]: number } {
+        if (custom.useClass === "Equerre" && custom.content && custom.content.properties) {
             resume["Folding"] += elementQuantity * custom.quantity * custom.content.properties.foldingPrice;
         }
-        custom.additionalComputings.forEach(computing => {
-            key = computing.useClass;
-            if (RESUME_FIELDS.indexOf(key) != -1) {
-                resume[key] += elementQuantity * custom.quantity * computing.unitPrice;
+        custom.additionalComputings.forEach((computing: any) => {
+            const k = computing.useClass;
+            if (RESUME_FIELDS.indexOf(k) !== -1) {
+                resume[k] += elementQuantity * custom.quantity * computing.unitPrice;
             }
         });
         return resume;
     }
 
-    /**
-     * @description Compute either an Operation or Assemblage element
-     * @author Quentin Wolfs
-     * @private
-     * @param {{ [className: string]: number }} resume
-     * @param {number} elementQuantity
-     * @param {QuoteElement} manip
-     * @returns {{ [className: string]: number }}
-     * @memberof QuoteService
-     */
-    private computeManipulations(resume: { [className: string]: number }, elementQuantity: number, manip: QuoteElement): { [className: string]: number } {
+    private computeManipulations(resume: { [className: string]: number }, elementQuantity: number, manip: any): { [className: string]: number } {
         let key: string = manip.useClass;
-        if (RESUME_FIELDS.indexOf(key) != -1) {
-            // Need to split laser & standard drilling
-            if (key == "Drilling") {
+        if (RESUME_FIELDS.indexOf(key) !== -1) {
+            if (key === "Drilling") {
                 key = manip.content.properties.isCalculated ? "LaserDrilling" : key;
             }
             resume[key] += elementQuantity * manip.quantity * manip.unitPrice;
         }
-
         return resume;
-    }
-
-    /**
-     * @description Get "DisplayQuote" (quotes without the detail) for each linked ProjectId using DataLoader
-     * @author Quentin Wolfs
-     * @param {string} quoteProjectId
-     * @param {string} uuid
-     * @returns {Promise<DisplayQuote[]>}
-     * @memberof QuoteService
-     */
-    public async getDisplayQuotesByProject(quoteProjectId: string, uuid: string): Promise<DisplayQuote[]> {
-        try {
-            return await this._displayQuoteByQuoteProjectLoader.get(uuid).load(quoteProjectId);
-        } catch (e) {
-            throw ErrorUtil.get(e);
-        }
-    }
-
-    /**
-     * @description Lists available DisplayQuotes matching a search pattern
-     * @author Quentin Wolfs
-     * @param {Pagination} pagination
-     * @param {SortQuote} sort
-     * @param {string} search
-     * @param {string} uuid
-     * @returns {Promise<Quote[]>}
-     * @memberof QuoteService
-     */
-    public async displayedList(pagination: Pagination, sort: SortQuote, search: string): Promise<DisplayQuote[]> {
-        try {
-            return await this._quoteModel.aggregate(this.getListAggregateStages(search, sort, pagination, true));
-        } catch (e) {
-            throw ErrorUtil.get(e);
-        }
     }
 }

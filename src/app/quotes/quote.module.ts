@@ -5,20 +5,19 @@ import { AccessGuard } from "../../core/guards/access.guard";
 
 // ---- IMPORTS ----
 import { PassportModule } from "@nestjs/passport";
-import { MongooseModule } from "@nestjs/mongoose";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommonModule } from "../common/common.module";
 import { UniqueNumberModule } from "../uniquenumber/uniquenumber.module";
 import { PdfModule } from "../pdf/pdf.module";
 
 // ---- ENTITIES ----
-import { QuoteProjectSchema } from "./schemas/quote-project.schema";
-import { QuoteSchema } from "./schemas/quote.schema";
+import { QuoteProjectEntity } from "./entities/quote-project.entity";
+import { QuoteEntity } from "./entities/quote.entity";
 
 // ---- LOADERS ----
 import { QuoteProjectLoader } from "./loaders/quote-project.loader";
 import { QuoteLoader } from "./loaders/quote.loader";
 import { QuoteByQuoteProjectLoader } from "./loaders/quote-by-quote-project.loader";
-import { DisplayQuoteByQuoteProjectLoader } from "./loaders/display-quote-by-quote-project.loader";
 
 // ---- SERVICES ----
 import { QuoteProjectService } from "./services/quote-project.service";
@@ -37,13 +36,10 @@ import { AuthModule } from "../auth/auth.module";
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
-        MongooseModule.forFeature([
-            { name: "projects", schema: QuoteProjectSchema },
-            { name: "quotes", schema: QuoteSchema }
-        ]),
+        TypeOrmModule.forFeature([QuoteProjectEntity, QuoteEntity]),
         CommonModule,
         UniqueNumberModule,
-        PdfModule,UserModule,AuthModule
+        PdfModule, UserModule, AuthModule
     ],
     providers: [
         { provide: APP_GUARD, useClass: AccessGuard },
@@ -54,7 +50,6 @@ import { AuthModule } from "../auth/auth.module";
         QuoteService,
         QuoteResolver,
         QuoteByQuoteProjectLoader,
-        DisplayQuoteByQuoteProjectLoader,
     ],
     controllers: [
         QuoteController

@@ -3,7 +3,7 @@ import { QuoteProject } from "./quote-project.interface";
 import { Sort } from "../../../core/interfaces/crud.interface";
 
 export enum QuoteSortBy {
-    ID = "_id",
+    ID = "id",
     NAME = "name",
     NUMBER = "number",
     REFERENCE = "reference",
